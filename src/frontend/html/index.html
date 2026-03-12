@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SolarSense – Home</title>
+  <title>GlowCheck – Home</title>
+    <!-- ── Favicon 浏览器标签图标 ── -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☀️</text></svg>">
 
   <!-- ── 字体引入 ── -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
@@ -168,6 +170,11 @@
       background: radial-gradient(circle, rgba(255,107,43,0.08) 0%, transparent 70%);
       pointer-events: none;
     }
+    .hero {
+      background-image: url("Replace_Image.png");
+      background-size: cover;
+      background-position: center;
+    }
 
     /* 小标签：页面状态标识 */
     .hero-eyebrow {
@@ -183,7 +190,11 @@
       color: var(--brand-primary);
       letter-spacing: 0.5px;
       text-transform: uppercase;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
+    }
+
+    .hero-text {
+  padding-top: -30;  /* 如果想整体往上 → 改成负值 margin-top: -20px */
     }
 
     /* 实时绿点动画 */
@@ -253,15 +264,14 @@
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(255,107,43,0.35);
     }
-
     .btn-outline {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 15px 28px;
-      background: transparent;
-      color: var(--text-primary);
-      border: 1.5px solid var(--bg-border);
+      background: rgba(255, 255, 255, 0.15);  /* 半透明白色底 */
+      color: white;                             /* 白色文字 */
+      border: 1.5px solid rgba(255,255,255,0.6); /* 白色半透明边框 */
       border-radius: var(--r-md);
       font-family: var(--font-body);
       font-size: 15px;
@@ -269,11 +279,12 @@
       cursor: pointer;
       transition: all 0.2s ease;
       text-decoration: none;
+      backdrop-filter: blur(8px);              /* 磨砂玻璃效果 */
     }
 
     .btn-outline:hover {
-      border-color: var(--text-muted);
-      background: var(--bg-card2);
+      background: rgba(255, 255, 255, 0.28);  /* hover 更亮一点 */
+      border-color: white;
     }
 
     /* ── 右侧统计数字卡片 ── */
@@ -297,7 +308,7 @@
       border-bottom: 1px solid var(--bg-border);
     }
 
-    .stat-item:first-child { padding-top: 0; }
+    .stat-item:first-child { padding-top: 40px 48px 72px;; }
     .stat-item:last-child  { padding-bottom: 0; border-bottom: none; }
 
     /* 统计数据图标背景 */
@@ -333,7 +344,7 @@
     }
 
     .section-label {
-      font-size: 11px;
+      font-size: 40px;
       font-weight: 700;
       letter-spacing: 3px;
       text-transform: uppercase;
@@ -456,14 +467,14 @@
   <nav class="nav">
     <a href="index.html" class="nav-logo">
       <div class="nav-logo-icon">☀</div>
-      SolarSense
+      GlowCheck
     </a>
 
     <div class="nav-links">
-      <a href="index.html"            class="nav-link active">Home</a>
-      <a href="page2-uv-tracker.html"      class="nav-link">UV Tracker</a>
-      <a href="page3-awareness.html"       class="nav-link">Awareness</a>
-      <a href="page4-protection-tools.html" class="nav-link">Protection Tools</a>
+      <a href="/index.html"            class="nav-link active">Home</a>
+      <a href="/page2-uv-tracker.html"      class="nav-link">UV Tracker</a>
+      <a href="/page3-awareness.html"       class="nav-link">Awareness</a>
+      <a href="/page4-protection-tools.html" class="nav-link">Protection Tools</a>
     </div>
 
     <a href="page2-uv-tracker.html" class="btn-nav">Check UV Now →</a>
@@ -494,11 +505,6 @@
       </h1>
 
       <!-- 副标题：说明背景问题 -->
-      <p class="hero-sub">
-        2 in 3 Australians will be diagnosed with skin cancer in their lifetime.
-        Gen Z is abandoning sun-safety habits for tanning trends — SolarSense
-        translates invisible UV data into warnings you actually understand.
-      </p>
 
       <!-- CTA 按钮组 -->
       <div class="hero-cta">
@@ -513,7 +519,7 @@
 
       <!-- 统计1: 发病率 -->
       <div class="stat-item">
-        <div class="stat-icon" style="background:#FEF2F2">🎗</div>
+        <div class="stat-icon" style="background:#FEF2F2"></div>
         <div>
           <div class="stat-number" style="color: var(--uv-veryhigh)">2 in 3</div>
           <div class="stat-desc">
@@ -525,7 +531,7 @@
 
       <!-- 统计2: 年轻人误区 -->
       <div class="stat-item">
-        <div class="stat-icon" style="background:#FEFCE8">📱</div>
+        <div class="stat-icon" style="background:#FEFCE8"></div>
         <div>
           <div class="stat-number" style="color: var(--uv-moderate)">74%</div>
           <div class="stat-desc">
@@ -537,7 +543,7 @@
 
       <!-- 统计3: 极端UV等级 -->
       <div class="stat-item">
-        <div class="stat-icon" style="background:#FAF5FF">🌞</div>
+        <div class="stat-icon" style="background:#FAF5FF"></div>
         <div>
           <div class="stat-number" style="color: var(--uv-extreme)">UV 11+</div>
           <div class="stat-desc">
@@ -557,14 +563,14 @@
        每张卡片对应一个页面 + 其 User Story 标签
        ============================================================ -->
   <section class="features-section">
-    <div class="section-label">What SolarSense does</div>
+    <div class="section-label">What GlowCheck does</div>
 
     <div class="features-grid">
 
       <!-- 卡片1: UV Tracker → page2 (US1.1 + US3.2) -->
       <a href="page2-uv-tracker.html" class="feature-card">
         <span class="card-arrow">↗</span>
-        <span class="card-emoji">🎯</span>
+        <span class="card-emoji"></span>
         <div class="card-title">Real-Time UV Alerts</div>
         <div class="card-desc">
           Location-aware UV index with human-readable burn-time warnings
@@ -576,7 +582,7 @@
       <!-- 卡片2: Awareness → page3 (US2.1 + US2.2) -->
       <a href="page3-awareness.html" class="feature-card">
         <span class="card-arrow">↗</span>
-        <span class="card-emoji">📊</span>
+        <span class="card-emoji"></span>
         <div class="card-title">Skin Cancer Awareness</div>
         <div class="card-desc">
           Data visualisations of Australia's skin cancer trends and
@@ -588,7 +594,7 @@
       <!-- 卡片3: Protection Tools → page4 (US3.1) -->
       <a href="page4-protection-tools.html" class="feature-card">
         <span class="card-arrow">↗</span>
-        <span class="card-emoji">🧴</span>
+        <span class="card-emoji"></span>
         <div class="card-title">Sunscreen Calculator</div>
         <div class="card-desc">
           Translate UV numbers into exact teaspoons and pump counts
@@ -600,7 +606,7 @@
       <!-- 卡片4: Protection Tools → page4 (US3.3) -->
       <a href="page4-protection-tools.html" class="feature-card">
         <span class="card-arrow">↗</span>
-        <span class="card-emoji">👕</span>
+        <span class="card-emoji"></span>
         <div class="card-title">Clothing Advisor</div>
         <div class="card-desc">
           Get specific fabric, sleeve length and hat recommendations
@@ -618,12 +624,12 @@
        隐私说明：强调不存储用户数据（满足 no user profile 约束）
        ============================================================ -->
   <footer class="footer">
-    <div class="footer-logo">☀ SolarSense</div>
+    <div class="footer-logo">☀ GlowCheck</div>
     <div class="footer-note">
-      FIT5120 · Team 28 · Monash University
+      FIT5120 · TA 28 · Monash University
     </div>
     <div class="footer-note">
-      <span class="privacy-badge">🔒 No user data stored</span>
+      <span class="privacy-badge"> No user data stored</span>
       Location used in-session only
     </div>
   </footer>
