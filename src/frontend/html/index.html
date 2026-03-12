@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolarSense – Home</title>
+
+  <!-- ── 字体引入 ── -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       设计 TOKEN — 全局 CSS 变量
+       将这些值同步到 Figma Local Variables
+       ============================================================ */
+    :root {
+      --bg-base:        #FAFAF7;  /* 页面底色：温暖米白 */
+      --bg-card:        #FFFFFF;  /* 普通卡片底色 */
+      --bg-card2:       #F4F2ED;  /* 次级卡片/输入框底色 */
+      --bg-border:      #E8E4DC;  /* 边框/分割线颜色 */
+      --bg-accent:      #FFF8EC;  /* 品牌高亮浅底 */
+
+      --text-primary:   #1A1714;  /* 主标题文字 */
+      --text-secondary: #6B6560;  /* 说明/描述文字 */
+      --text-muted:     #A09990;  /* 标签/弱文字 */
+
+      --brand-primary:  #FF6B2B;  /* 主品牌橙（CTA 按钮等） */
+      --brand-light:    #FFF3EB;  /* 品牌橙的浅底色 */
+
+      /* UV 五级颜色 — 对应 AC 验收标准 */
+      --uv-low:       #22C55E;  /* 1-2  绿 */
+      --uv-moderate:  #EAB308;  /* 3-5  黄 */
+      --uv-high:      #F97316;  /* 6-7  橙 */
+      --uv-veryhigh:  #EF4444;  /* 8-10 红 */
+      --uv-extreme:   #9333EA;  /* 11+  紫 */
+
+      --font-body:    'Plus Jakarta Sans', sans-serif;
+      --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.10);
+    }
+
+    /* ============================================================
+       RESET & BASE
+       基础重置样式
+       ============================================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       NAVIGATION BAR — 顶部导航栏
+       所有页面共用相同导航，active 类标记当前页
+       ============================================================ */
+    .nav {
+      background: rgba(250, 250, 247, 0.92);
+      backdrop-filter: blur(12px);       /* 磨砂玻璃效果 */
+      border-bottom: 1px solid var(--bg-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 48px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Logo 品牌标识 */
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 32px; height: 32px;
+      background: var(--brand-primary);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      color: white;
+    }
+
+    /* 导航链接列表 */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: var(--r-md);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+
+    .nav-link:hover {
+      background: var(--bg-card2);
+      color: var(--text-primary);
+    }
+
+    /* 当前激活页面的导航链接 */
+    .nav-link.active {
+      background: var(--bg-card2);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* 导航右侧 CTA 按钮 */
+    .btn-nav {
+      padding: 10px 22px;
+      background: var(--brand-primary);
+      color: white;
+      border: none;
+      border-radius: var(--r-md);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .btn-nav:hover {
+      background: #e5581f;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255,107,43,0.3);
+    }
+
+    /* ============================================================
+       HERO SECTION — 首屏主视觉区域
+       实现 US: 用户第一眼看到问题的严重性并被引导行动
+       左侧：标题 + CTA | 右侧：数据统计卡片
+       ============================================================ */
+    .hero {
+      padding: 80px 48px 72px;
+      display: grid;
+      grid-template-columns: 1fr 480px;  /* 左侧文字 / 右侧卡片 */
+      gap: 64px;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 背景装饰：右上角大太阳光晕 */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 480px; height: 480px;
+      background: radial-gradient(circle, rgba(255,107,43,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* 小标签：页面状态标识 */
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--brand-light);
+      border: 1px solid rgba(255,107,43,0.2);
+      border-radius: var(--r-pill);
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand-primary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    /* 实时绿点动画 */
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #22C55E;
+      animation: livepulse 2s infinite;
+    }
+
+    @keyframes livepulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    /* 主标题 */
+    .hero-title {
+      font-size: 58px;
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      color: var(--text-primary);
+      margin-bottom: 22px;
+    }
+
+    /* 标题高亮词 - 用品牌橙强调危险 */
+    .hero-title .highlight {
+      color: var(--brand-primary);
+      position: relative;
+    }
+
+    /* 副标题说明文字 */
+    .hero-sub {
+      font-size: 17px;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      max-width: 460px;
+      margin-bottom: 36px;
+    }
+
+    /* CTA 按钮组 */
+    .hero-cta {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 15px 28px;
+      background: var(--brand-primary);
+      color: white;
+      border: none;
+      border-radius: var(--r-md);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      background: #e5581f;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255,107,43,0.35);
+    }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 15px 28px;
+      background: transparent;
+      color: var(--text-primary);
+      border: 1.5px solid var(--bg-border);
+      border-radius: var(--r-md);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--text-muted);
+      background: var(--bg-card2);
+    }
+
+    /* ── 右侧统计数字卡片 ── */
+    .hero-stats-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 36px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* 单条统计数据行 */
+    .stat-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--bg-border);
+    }
+
+    .stat-item:first-child { padding-top: 0; }
+    .stat-item:last-child  { padding-bottom: 0; border-bottom: none; }
+
+    /* 统计数据图标背景 */
+    .stat-icon {
+      width: 46px; height: 46px;
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .stat-number {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.5px;
+    }
+
+    .stat-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      margin-top: 4px;
+    }
+
+    /* ============================================================
+       FEATURES SECTION — 功能导航卡片区域
+       引导用户进入4个子功能页面
+       对应所有 US 的入口
+       ============================================================ */
+    .features-section {
+      padding: 0 48px 80px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* 4列功能卡片网格 */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    /* 单个功能导航卡片 */
+    .feature-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 28px 24px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .feature-card:hover {
+      border-color: var(--brand-primary);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* 卡片右上角箭头 */
+    .card-arrow {
+      position: absolute;
+      top: 24px; right: 24px;
+      color: var(--text-muted);
+      font-size: 18px;
+      transition: transform 0.2s;
+    }
+
+    .feature-card:hover .card-arrow {
+      transform: translate(3px, -3px);
+      color: var(--brand-primary);
+    }
+
+    .card-emoji { font-size: 36px; margin-bottom: 18px; display: block; }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* 卡片底部 US 标签 */
+    .card-us {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: var(--bg-card2);
+      border-radius: var(--r-pill);
+      padding: 4px 10px;
+      margin-top: 14px;
+    }
+
+    /* ============================================================
+       FOOTER — 页脚
+       ============================================================ */
+    .footer {
+      border-top: 1px solid var(--bg-border);
+      padding: 28px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .footer-logo { font-weight: 700; color: var(--text-secondary); }
+
+    .footer-note {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .privacy-badge {
+      background: #F0FDF4;
+      border: 1px solid #86EFAC;
+      border-radius: var(--r-pill);
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #16A34A;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVIGATION BAR
+       当前页: Home (active = Home)
+       其他页面将此处 active 类移到对应链接
+       ============================================================ -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">☀</div>
+      SolarSense
+    </a>
+
+    <div class="nav-links">
+      <a href="index.html"            class="nav-link active">Home</a>
+      <a href="page2-uv-tracker.html"      class="nav-link">UV Tracker</a>
+      <a href="page3-awareness.html"       class="nav-link">Awareness</a>
+      <a href="page4-protection-tools.html" class="nav-link">Protection Tools</a>
+    </div>
+
+    <a href="page2-uv-tracker.html" class="btn-nav">Check UV Now →</a>
+  </nav>
+
+
+  <!-- ============================================================
+       HERO SECTION
+       目的: 传达紧迫感，引导用户立即查看 UV 状态
+       数据来源: ABS 统计数字（静态文案）
+       ============================================================ -->
+  <section class="hero">
+
+    <!-- 左侧：文字内容区 -->
+    <div class="hero-text">
+
+      <!-- 实时状态标签 -->
+      <div class="hero-eyebrow">
+        <div class="live-dot"></div>
+        Live UV Tracking · Victoria, Australia
+      </div>
+
+      <!-- 主标题：用强烈对比传递信息 -->
+      <h1 class="hero-title">
+        Sun you<br>
+        can't feel is<br>
+        still <span class="highlight">burning you</span>
+      </h1>
+
+      <!-- 副标题：说明背景问题 -->
+      <p class="hero-sub">
+        2 in 3 Australians will be diagnosed with skin cancer in their lifetime.
+        Gen Z is abandoning sun-safety habits for tanning trends — SolarSense
+        translates invisible UV data into warnings you actually understand.
+      </p>
+
+      <!-- CTA 按钮组 -->
+      <div class="hero-cta">
+        <a href="page2-uv-tracker.html" class="btn-primary">Check My UV Risk →</a>
+        <a href="page3-awareness.html" class="btn-outline">See the Data</a>
+      </div>
+    </div>
+
+    <!-- 右侧：三条关键统计数字卡片 -->
+    <!-- 数据来源: Cancer Incidence CSV + ABS 研究 -->
+    <div class="hero-stats-card">
+
+      <!-- 统计1: 发病率 -->
+      <div class="stat-item">
+        <div class="stat-icon" style="background:#FEF2F2">🎗</div>
+        <div>
+          <div class="stat-number" style="color: var(--uv-veryhigh)">2 in 3</div>
+          <div class="stat-desc">
+            Australians will be diagnosed with skin cancer in their lifetime —
+            the highest rate in the world
+          </div>
+        </div>
+      </div>
+
+      <!-- 统计2: 年轻人误区 -->
+      <div class="stat-item">
+        <div class="stat-icon" style="background:#FEFCE8">📱</div>
+        <div>
+          <div class="stat-number" style="color: var(--uv-moderate)">74%</div>
+          <div class="stat-desc">
+            of young adults have an "invincibility misconception" —
+            viewing sun damage as a status symbol, not a health risk
+          </div>
+        </div>
+      </div>
+
+      <!-- 统计3: 极端UV等级 -->
+      <div class="stat-item">
+        <div class="stat-icon" style="background:#FAF5FF">🌞</div>
+        <div>
+          <div class="stat-number" style="color: var(--uv-extreme)">UV 11+</div>
+          <div class="stat-desc">
+            Melbourne regularly hits "Extreme" UV in summer.
+            At UV 11+, skin damage begins in under 7 minutes
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       FEATURES SECTION
+       目的: 导航用户进入4个子功能
+       每张卡片对应一个页面 + 其 User Story 标签
+       ============================================================ -->
+  <section class="features-section">
+    <div class="section-label">What SolarSense does</div>
+
+    <div class="features-grid">
+
+      <!-- 卡片1: UV Tracker → page2 (US1.1 + US3.2) -->
+      <a href="page2-uv-tracker.html" class="feature-card">
+        <span class="card-arrow">↗</span>
+        <span class="card-emoji">🎯</span>
+        <div class="card-title">Real-Time UV Alerts</div>
+        <div class="card-desc">
+          Location-aware UV index with human-readable burn-time warnings
+          and 5-level colour-coded risk system.
+        </div>
+        <span class="card-us">US1.1 · US3.2</span>
+      </a>
+
+      <!-- 卡片2: Awareness → page3 (US2.1 + US2.2) -->
+      <a href="page3-awareness.html" class="feature-card">
+        <span class="card-arrow">↗</span>
+        <span class="card-emoji">📊</span>
+        <div class="card-title">Skin Cancer Awareness</div>
+        <div class="card-desc">
+          Data visualisations of Australia's skin cancer trends and
+          UV history across 8 capital cities (2016–2025).
+        </div>
+        <span class="card-us">US2.1 · US2.2</span>
+      </a>
+
+      <!-- 卡片3: Protection Tools → page4 (US3.1) -->
+      <a href="page4-protection-tools.html" class="feature-card">
+        <span class="card-arrow">↗</span>
+        <span class="card-emoji">🧴</span>
+        <div class="card-title">Sunscreen Calculator</div>
+        <div class="card-desc">
+          Translate UV numbers into exact teaspoons and pump counts
+          of sunscreen — no more guesswork.
+        </div>
+        <span class="card-us">US3.1</span>
+      </a>
+
+      <!-- 卡片4: Protection Tools → page4 (US3.3) -->
+      <a href="page4-protection-tools.html" class="feature-card">
+        <span class="card-arrow">↗</span>
+        <span class="card-emoji">👕</span>
+        <div class="card-title">Clothing Advisor</div>
+        <div class="card-desc">
+          Get specific fabric, sleeve length and hat recommendations
+          based on today's UV level and temperature.
+        </div>
+        <span class="card-us">US3.3</span>
+      </a>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       FOOTER
+       隐私说明：强调不存储用户数据（满足 no user profile 约束）
+       ============================================================ -->
+  <footer class="footer">
+    <div class="footer-logo">☀ SolarSense</div>
+    <div class="footer-note">
+      FIT5120 · Team 28 · Monash University
+    </div>
+    <div class="footer-note">
+      <span class="privacy-badge">🔒 No user data stored</span>
+      Location used in-session only
+    </div>
+  </footer>
+
+</body>
+</html>

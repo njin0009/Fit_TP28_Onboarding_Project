@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolarSense – Awareness & Data</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       设计 TOKEN — 与其他页面保持一致
+       ============================================================ */
+    :root {
+      --bg-base:        #FAFAF7;
+      --bg-card:        #FFFFFF;
+      --bg-card2:       #F4F2ED;
+      --bg-border:      #E8E4DC;
+      --bg-accent:      #FFF8EC;
+      --text-primary:   #1A1714;
+      --text-secondary: #6B6560;
+      --text-muted:     #A09990;
+      --brand-primary:  #FF6B2B;
+      --brand-light:    #FFF3EB;
+      --uv-low:         #22C55E;
+      --uv-moderate:    #EAB308;
+      --uv-high:        #F97316;
+      --uv-veryhigh:    #EF4444;
+      --uv-extreme:     #9333EA;
+      --font-body:      'Plus Jakarta Sans', sans-serif;
+      --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.10);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       NAVIGATION BAR — active = Awareness
+       ============================================================ */
+    .nav {
+      background: rgba(250,250,247,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--bg-border);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 48px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 18px; font-weight: 800;
+      color: var(--text-primary); text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 32px; height: 32px; background: var(--brand-primary);
+      border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 16px; color: white;
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 4px; }
+
+    .nav-link {
+      padding: 8px 16px; border-radius: var(--r-md);
+      font-size: 14px; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      transition: all 0.18s ease;
+    }
+
+    .nav-link:hover  { background: var(--bg-card2); color: var(--text-primary); }
+    .nav-link.active { background: var(--bg-card2); color: var(--text-primary); font-weight: 600; }
+
+    .btn-nav {
+      padding: 10px 22px; background: var(--brand-primary);
+      color: white; border: none; border-radius: var(--r-md);
+      font-family: var(--font-body); font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.18s ease;
+      text-decoration: none; display: inline-flex; align-items: center;
+    }
+
+    .btn-nav:hover { background: #e5581f; transform: translateY(-1px); }
+
+    /* ============================================================
+       PAGE WRAPPER
+       ============================================================ */
+    .page-wrap { padding: 40px 48px 72px; }
+
+    /* 页面标题区 */
+    .page-header { margin-bottom: 40px; }
+
+    .page-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .page-title {
+      font-size: 32px; font-weight: 800;
+      letter-spacing: -0.5px; margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 15px; color: var(--text-secondary);
+      line-height: 1.65; max-width: 560px;
+    }
+
+    .us-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--brand-light);
+      border: 1px solid rgba(255,107,43,0.2);
+      border-radius: var(--r-pill);
+      padding: 6px 14px; font-size: 11px; font-weight: 700;
+      color: var(--brand-primary); letter-spacing: 1px; text-transform: uppercase;
+    }
+
+    /* Section 分割标签 */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 40px 0 24px;
+    }
+
+    .section-divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--bg-border);
+    }
+
+    .section-divider-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       US2.1 — 图表区域 (两图并排)
+       图表1: 皮肤癌发病率趋势 (Cancer Incidence/Mortality CSV)
+       图表2: 澳洲8城市UV历史趋势 (UV Index CSV 2016-2025)
+       ============================================================ */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 0;
+    }
+
+    /* 图表卡片容器 */
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 28px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .chart-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    /* 数据来源标注 — Figma 中需要保留此标注 */
+    .chart-source {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* ── 图表1: 模拟柱状图 ──
+       Figma 占位: 实际实现用 Chart.js BarChart
+       数据: Dataset-Melanoma CSV + Dataset-Cancer by Location CSV
+       X轴: 年份 1982-2017 (5年间隔)
+       Y轴: 每10万人发病率 */
+    .bar-chart-area {
+      height: 160px;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      border-bottom: 1.5px solid var(--bg-border);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+
+    .bar {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      min-width: 0;
+      transition: opacity 0.2s;
+      cursor: pointer;
+    }
+
+    .bar:hover { opacity: 0.75; }
+
+    .bar-x-labels {
+      display: flex;
+      gap: 6px;
+    }
+
+    .bar-x-label {
+      flex: 1;
+      font-size: 9px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ── 图表2: 模拟折线图 ──
+       Figma 占位: 实际实现用 Chart.js LineChart
+       数据: UV index CSV 2016-2025 (data.gov.au)
+       8个首都城市, 1分钟分辨率聚合为月均值 */
+    .line-chart-area {
+      height: 160px;
+      background: var(--bg-card2);
+      border-radius: var(--r-md);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--bg-border);
+    }
+
+    /* SVG 折线图（Figma 中替换为 Chart.js） */
+    .line-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 图表图例 */
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .legend-line {
+      width: 16px;
+      height: 2px;
+      border-radius: 2px;
+    }
+
+    /* 图表下方关键洞察 */
+    .chart-insight {
+      background: var(--bg-accent);
+      border: 1px solid rgba(255,107,43,0.15);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-top: 14px;
+    }
+
+    .insight-bold { font-weight: 700; color: var(--text-primary); }
+
+    /* ============================================================
+       US2.2 — 皮肤色调工具
+       Monk Skin Tone Scale (MST) 10 级调色板
+       用户选择色调后显示对应的 UV 吸收建议
+       注意: 所选色调仅在会话中使用，不存储
+       ============================================================ */
+    .skin-tone-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .skin-tone-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+    }
+
+    .skin-tone-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .skin-tone-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 480px;
+    }
+
+    /* 隐私标签 */
+    .session-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #F0FDF4;
+      border: 1px solid #86EFAC;
+      border-radius: var(--r-pill);
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #16A34A;
+      white-space: nowrap;
+    }
+
+    .skin-tone-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* ── Monk Skin Tone 10 级色板 ──
+       数据来源: Google Monk Skin Tone Scale (skintone.google)
+       包含10个色调的 hex 值 + 分类描述 */
+    .mst-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    /* 色板网格: 5x2 排列 */
+    .mst-palette {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    /* 单个色调按钮 */
+    .tone-btn {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+
+    .tone-btn:hover {
+      transform: scale(1.12);
+      border-color: rgba(0,0,0,0.2);
+    }
+
+    /* 选中状态 */
+    .tone-btn.selected {
+      border-color: var(--text-primary);
+      box-shadow: 0 0 0 3px rgba(26,23,20,0.15);
+    }
+
+    /* 选中勾号 */
+    .tone-btn.selected::after {
+      content: '✓';
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+
+    /* MST 序号标注 */
+    .mst-index-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .mst-index {
+      width: 48px;
+      text-align: center;
+      font-size: 9px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* ── UV 吸收建议结果框 ──
+       根据选中的皮肤色调动态显示建议
+       Figma 中需要做 10 个不同状态 */
+    .skin-result {
+      background: var(--bg-card2);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 24px;
+    }
+
+    .skin-result-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    /* 选中色调的预览圆 */
+    .selected-tone-preview {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--bg-border);
+      flex-shrink: 0;
+    }
+
+    .skin-result-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .skin-result-mst {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* 风险等级指示条 */
+    .skin-risk-bar {
+      background: var(--bg-border);
+      height: 6px;
+      border-radius: var(--r-pill);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .skin-risk-fill {
+      height: 100%;
+      border-radius: var(--r-pill);
+      background: linear-gradient(90deg, #22C55E, #EAB308, #EF4444);
+      width: 55%;  /* 代表中等色调的风险等级 */
+    }
+
+    .skin-advice-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .skin-advice-body {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* 建议要点列表 */
+    .advice-list {
+      list-style: none;
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .advice-list li {
+      display: flex;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .advice-list li::before {
+      content: '→';
+      color: var(--brand-primary);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .footer {
+      border-top: 1px solid var(--bg-border);
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .privacy-badge {
+      background: #F0FDF4; border: 1px solid #86EFAC;
+      border-radius: var(--r-pill); padding: 3px 10px;
+      font-size: 11px; font-weight: 600; color: #16A34A;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVIGATION BAR — active = Awareness
+       ============================================================ -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">☀</div>
+      SolarSense
+    </a>
+    <div class="nav-links">
+      <a href="index.html"             class="nav-link">Home</a>
+      <a href="page2-uv-tracker.html"       class="nav-link">UV Tracker</a>
+      <a href="page3-awareness.html"        class="nav-link active">Awareness</a>
+      <a href="page4-protection-tools.html" class="nav-link">Protection Tools</a>
+    </div>
+    <a href="page2-uv-tracker.html" class="btn-nav">Check UV Now →</a>
+  </nav>
+
+
+  <div class="page-wrap">
+
+    <!-- ============================================================
+         PAGE HEADER
+         ============================================================ -->
+    <div class="page-header">
+      <div class="page-header-top">
+        <div>
+          <h1 class="page-title">Awareness & UV Data</h1>
+          <p class="page-subtitle">
+            When you understand the "why", you stop ignoring the warnings.
+            These visualisations show the real impact of UV radiation in Australia —
+            across decades, demographics and cities.
+          </p>
+        </div>
+        <div class="us-tag">US2.1 · US2.2</div>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         US2.1 SECTION — 两个数据可视化图表
+         ============================================================ -->
+    <div class="section-divider">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-label">US2.1 — Data Visualisations</div>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div class="charts-grid">
+
+      <!-- ── 图表 1: 皮肤癌发病趋势 ──
+           US2.1 AC: "系统应显示皮肤癌影响/发病率的数据可视化图表"
+           数据来源: Dataset-Melanoma CSV + Dataset-Cancer by Location CSV
+           Figma 注: 此处替换为 Chart.js BarChart 组件
+           X轴: 年份 (1982-2017)  Y轴: 每10万人发病率 -->
+      <div class="chart-card">
+        <div class="chart-title">Skin Cancer Incidence & Mortality</div>
+        <div class="chart-source">
+          Source: AIHW · Dataset-Melanoma CSV + Dataset-Cancer by Location CSV · 1982–2017 · Australia
+        </div>
+
+        <!-- [Figma/Vue 替换]: 此区域替换为 Chart.js BarChart -->
+        <div class="bar-chart-area">
+          <!-- 模拟8年数据柱 — 逐年上升趋势 -->
+          <div class="bar" style="background:#FCA5A5; height:55%"></div>
+          <div class="bar" style="background:#F87171; height:63%"></div>
+          <div class="bar" style="background:#EF4444; height:69%"></div>
+          <div class="bar" style="background:#EF4444; height:75%"></div>
+          <div class="bar" style="background:#DC2626; height:80%"></div>
+          <div class="bar" style="background:#DC2626; height:87%"></div>
+          <div class="bar" style="background:#B91C1C; height:93%"></div>
+          <div class="bar" style="background:#B91C1C; height:100%"></div>
+        </div>
+        <div class="bar-x-labels">
+          <div class="bar-x-label">1982</div>
+          <div class="bar-x-label">1987</div>
+          <div class="bar-x-label">1992</div>
+          <div class="bar-x-label">1997</div>
+          <div class="bar-x-label">2002</div>
+          <div class="bar-x-label">2007</div>
+          <div class="bar-x-label">2012</div>
+          <div class="bar-x-label">2017</div>
+        </div>
+
+        <div class="chart-insight">
+          <span class="insight-bold">Key finding:</span> Melanoma incidence has risen
+          steadily over 35 years. Victoria records the 3rd highest rate nationally.
+          Gen Z now entering peak-risk age group (20–40).
+        </div>
+      </div>
+
+      <!-- ── 图表 2: 澳洲8城市UV历史趋势 ──
+           US2.1 AC: "系统应显示澳大利亚热力/UV趋势的第二个数据可视化"
+           数据来源: UV Index CSV 2016-2025 (data.gov.au) — 1分钟分辨率聚合为月均值
+           Figma 注: 此区域替换为 Chart.js MultiLineChart
+           X轴: 月份 (2016-2025)  Y轴: UV Index 均值 -->
+      <div class="chart-card">
+        <div class="chart-title">UV Index Trends — 8 Capital Cities</div>
+        <div class="chart-source">
+          Source: data.gov.au · UV Index CSV 2016–2025 · 1-min resolution · Creative Commons 2.5 AU
+        </div>
+
+        <!-- [Figma/Vue 替换]: 此区域替换为 Chart.js MultiLineChart -->
+        <div class="line-chart-area">
+          <svg class="line-svg" viewBox="0 0 500 160" preserveAspectRatio="none">
+            <!-- 背景网格线 -->
+            <line x1="0" y1="40"  x2="500" y2="40"  stroke="#E8E4DC" stroke-width="1"/>
+            <line x1="0" y1="80"  x2="500" y2="80"  stroke="#E8E4DC" stroke-width="1"/>
+            <line x1="0" y1="120" x2="500" y2="120" stroke="#E8E4DC" stroke-width="1"/>
+
+            <!-- Melbourne UV 线 — 红色 -->
+            <polyline
+              points="0,110 60,75 120,35 180,22 240,40 300,65 360,85 420,55 500,75"
+              fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linejoin="round"/>
+
+            <!-- Sydney UV 线 — 橙色 -->
+            <polyline
+              points="0,118 60,85 120,48 180,30 240,50 300,74 360,95 420,65 500,85"
+              fill="none" stroke="#F97316" stroke-width="2" stroke-linejoin="round" stroke-dasharray="none"/>
+
+            <!-- Brisbane UV 线 — 黄色（最高） -->
+            <polyline
+              points="0,100 60,60 120,22 180,12 240,28 300,52 360,70 420,42 500,60"
+              fill="none" stroke="#EAB308" stroke-width="2" stroke-linejoin="round"/>
+
+            <!-- Perth UV 线 — 绿色 -->
+            <polyline
+              points="0,120 60,90 120,55 180,40 240,60 300,80 360,100 420,72 500,90"
+              fill="none" stroke="#22C55E" stroke-width="1.5" stroke-linejoin="round" opacity="0.7"/>
+          </svg>
+        </div>
+
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-line" style="background:#EF4444"></div> Melbourne
+          </div>
+          <div class="legend-item">
+            <div class="legend-line" style="background:#F97316"></div> Sydney
+          </div>
+          <div class="legend-item">
+            <div class="legend-line" style="background:#EAB308"></div> Brisbane
+          </div>
+          <div class="legend-item">
+            <div class="legend-line" style="background:#22C55E"></div> Perth
+          </div>
+        </div>
+
+        <div class="chart-insight">
+          <span class="insight-bold">Key finding:</span> All 8 capital cities regularly
+          exceed UV 6+ during summer months. Melbourne peaks at UV 14 in January —
+          dangerous exposure in under 7 minutes.
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         US2.2 SECTION — 皮肤色调 UV 工具
+         ============================================================ -->
+    <div class="section-divider">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-label">US2.2 — Skin Tone UV Tool</div>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <!-- US2.2: 皮肤色调 × UV 吸收关系工具
+         功能: 用户选择 Monk Skin Tone → 显示该肤色对 UV 的吸收差异 + 个性化建议
+         数据来源: Google Monk Skin Tone Scale (skintone.google)
+         重要: 选择结果不存储，仅在会话中使用 (no user profile 约束) -->
+    <div class="skin-tone-card">
+      <div class="skin-tone-header">
+        <div>
+          <h2 class="skin-tone-title">How Does UV Affect Your Skin Tone?</h2>
+          <p class="skin-tone-sub">
+            Select your tone from the Monk Skin Tone (MST) scale to see how UV radiation
+            affects your specific skin type and receive tailored protection advice.
+            Different melanin levels change your risk profile significantly.
+          </p>
+        </div>
+        <!-- 隐私声明 — 重要约束 -->
+        <div class="session-badge">🔒 Session only · Not stored</div>
+      </div>
+
+      <div class="skin-tone-layout">
+
+        <!-- 左侧: MST 色板选择器 -->
+        <div>
+          <div class="mst-label">Monk Skin Tone Scale — Select Your Tone</div>
+
+          <!-- 10 个色调按钮
+               颜色值来源: Google Monk Skin Tone Scale hex 值
+               MST-1 至 MST-10 从最浅到最深 -->
+          <div class="mst-palette">
+            <!-- MST 1 — 极浅 -->
+            <button class="tone-btn" style="background:#F6EDE4" title="MST 1 - Very Light"></button>
+            <!-- MST 2 -->
+            <button class="tone-btn" style="background:#F3E7DB" title="MST 2 - Light"></button>
+            <!-- MST 3 -->
+            <button class="tone-btn" style="background:#F7EAD0" title="MST 3 - Light Medium"></button>
+            <!-- MST 4 -->
+            <button class="tone-btn" style="background:#EADABA" title="MST 4 - Medium Light"></button>
+            <!-- MST 5 -->
+            <button class="tone-btn" style="background:#D7BD96" title="MST 5 - Medium"></button>
+            <!-- MST 6 -->
+            <button class="tone-btn" style="background:#A07850" title="MST 6 - Medium Dark"></button>
+            <!-- MST 7 — 当前选中示意 -->
+            <button class="tone-btn selected" style="background:#825C43" title="MST 7 - Dark Medium"></button>
+            <!-- MST 8 -->
+            <button class="tone-btn" style="background:#604134" title="MST 8 - Dark"></button>
+            <!-- MST 9 -->
+            <button class="tone-btn" style="background:#3A312A" title="MST 9 - Very Dark"></button>
+            <!-- MST 10 — 最深 -->
+            <button class="tone-btn" style="background:#292420" title="MST 10 - Deepest"></button>
+          </div>
+
+          <!-- MST 序号标注 -->
+          <div class="mst-index-row">
+            <div class="mst-index">1</div>
+            <div class="mst-index">2</div>
+            <div class="mst-index">3</div>
+            <div class="mst-index">4</div>
+            <div class="mst-index">5</div>
+            <div class="mst-index">6</div>
+            <div class="mst-index">7</div>
+            <div class="mst-index">8</div>
+            <div class="mst-index">9</div>
+            <div class="mst-index">10</div>
+          </div>
+
+          <p style="font-size:12px; color:var(--text-muted); margin-top:14px; line-height:1.6">
+            The Monk Skin Tone Scale is a 10-shade scale developed by Google
+            to represent diverse global skin tones more accurately than older
+            dermatological scales.
+          </p>
+        </div>
+
+        <!-- 右侧: 当前选中色调的 UV 建议
+             Figma 中需要为 10 个色调分别准备状态 -->
+        <div class="skin-result">
+          <div class="skin-result-header">
+            <!-- 选中色调预览 — MST 7 -->
+            <div class="selected-tone-preview" style="background:#825C43"></div>
+            <div>
+              <div class="skin-result-name">MST 7 — Dark Medium</div>
+              <div class="skin-result-mst">Fitzpatrick Type IV–V · Moderate melanin protection</div>
+            </div>
+          </div>
+
+          <!-- UV 风险等级条 — 视觉化风险位置 -->
+          <div class="skin-risk-bar">
+            <div class="skin-risk-fill"></div>
+          </div>
+
+          <div class="skin-advice-title">Your UV Risk Profile at UV 9</div>
+          <div class="skin-advice-body">
+            Melanin provides some natural UV protection, but does <strong>not</strong>
+            prevent DNA damage. At UV 9, even dark skin tones sustain cellular
+            damage within 20–30 minutes unprotected. Darker tones often
+            underestimate their risk — and skin cancer in darker skin is
+            typically detected later, leading to worse outcomes.
+          </div>
+
+          <!-- 个性化建议要点 -->
+          <ul class="advice-list">
+            <li>Apply SPF 30–50+ daily, even on overcast days</li>
+            <li>Reapply every 2 hours — melanin does not block UV reapplication need</li>
+            <li>Check your skin monthly for new or changing spots</li>
+            <li>Seek shade between 10am–3pm regardless of skin tone</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-wrap -->
+
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="footer">
+    <span>☀ SolarSense · FIT5120 Team 28</span>
+    <span>Data: AIHW Cancer CSV · data.gov.au UV CSV · Google Monk Skin Tone Scale</span>
+    <span class="privacy-badge">🔒 No user data stored</span>
+  </footer>
+
+</body>
+</html>

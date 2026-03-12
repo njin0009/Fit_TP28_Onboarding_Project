@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolarSense – Protection Tools</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       设计 TOKEN — 与其他页面保持一致
+       ============================================================ */
+    :root {
+      --bg-base:        #FAFAF7;
+      --bg-card:        #FFFFFF;
+      --bg-card2:       #F4F2ED;
+      --bg-border:      #E8E4DC;
+      --bg-accent:      #FFF8EC;
+      --text-primary:   #1A1714;
+      --text-secondary: #6B6560;
+      --text-muted:     #A09990;
+      --brand-primary:  #FF6B2B;
+      --brand-light:    #FFF3EB;
+      --uv-low:         #22C55E;
+      --uv-moderate:    #EAB308;
+      --uv-high:        #F97316;
+      --uv-veryhigh:    #EF4444;
+      --uv-extreme:     #9333EA;
+      --font-body:      'Plus Jakarta Sans', sans-serif;
+      --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.10);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       NAVIGATION BAR — active = Protection Tools
+       ============================================================ */
+    .nav {
+      background: rgba(250,250,247,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--bg-border);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 48px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 18px; font-weight: 800;
+      color: var(--text-primary); text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 32px; height: 32px; background: var(--brand-primary);
+      border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 16px; color: white;
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 4px; }
+
+    .nav-link {
+      padding: 8px 16px; border-radius: var(--r-md);
+      font-size: 14px; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      transition: all 0.18s ease;
+    }
+
+    .nav-link:hover  { background: var(--bg-card2); color: var(--text-primary); }
+    .nav-link.active { background: var(--bg-card2); color: var(--text-primary); font-weight: 600; }
+
+    .btn-nav {
+      padding: 10px 22px; background: var(--brand-primary);
+      color: white; border: none; border-radius: var(--r-md);
+      font-family: var(--font-body); font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.18s ease;
+      text-decoration: none; display: inline-flex; align-items: center;
+    }
+
+    .btn-nav:hover { background: #e5581f; transform: translateY(-1px); }
+
+    /* ============================================================
+       PAGE WRAP
+       ============================================================ */
+    .page-wrap { padding: 40px 48px 72px; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 36px;
+    }
+
+    .page-title {
+      font-size: 32px; font-weight: 800;
+      letter-spacing: -0.5px; margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 15px; color: var(--text-secondary);
+      line-height: 1.65; max-width: 520px;
+    }
+
+    .us-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--brand-light);
+      border: 1px solid rgba(255,107,43,0.2);
+      border-radius: var(--r-pill); padding: 6px 14px;
+      font-size: 11px; font-weight: 700; color: var(--brand-primary);
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+
+    /* ── 当前 UV 状态栏 ──
+       两个工具都依赖实时 UV + 温度数据
+       数据来源: UV Index API + Temperature API */
+    .current-conditions {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .condition-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .condition-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .condition-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .condition-value {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .condition-divider {
+      width: 1px;
+      height: 44px;
+      background: var(--bg-border);
+    }
+
+    .condition-source {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: right;
+      line-height: 1.6;
+    }
+
+    /* Section 分割标签 */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 36px 0 24px;
+    }
+
+    .section-divider-line { flex: 1; height: 1px; background: var(--bg-border); }
+
+    .section-divider-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-muted); white-space: nowrap;
+    }
+
+    /* ============================================================
+       US3.1 — 防晒霜用量计算器
+       功能: 根据 UV 指数计算所需防晒霜用量（茶匙/泵次）
+       数据来源: UV Index API (实时) + Location Data CSV
+       备选: 当 GPS 不可用时，用户手动输入 UV 值
+       ============================================================ */
+    .calculator-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 36px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .tool-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 28px;
+    }
+
+    .tool-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .tool-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 480px;
+    }
+
+    .tool-us-tag {
+      display: inline-flex; align-items: center;
+      background: var(--bg-card2);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-pill);
+      padding: 5px 12px;
+      font-size: 11px; font-weight: 700;
+      color: var(--text-muted); letter-spacing: 1px;
+      text-transform: uppercase; white-space: nowrap;
+    }
+
+    /* ── UV 输入方式切换 ──
+       US3.1 AC: 有 GPS 时自动获取；无 GPS 时用户手动输入 UV 值 */
+    .input-mode-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-card2);
+      border-radius: var(--r-md);
+      padding: 4px;
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+
+    .input-tab {
+      padding: 8px 20px;
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      transition: all 0.15s ease;
+    }
+
+    .input-tab.active {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* ── UV 滑块 (GPS 模式下显示) ──
+       Figma 注: 实际用 HTML range input 或 Vue 组件实现
+       滑块颜色跟随 UV 等级变化 */
+    .uv-slider-section {
+      margin-bottom: 28px;
+    }
+
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .slider-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* 当前 UV 数值大字显示 */
+    .slider-current-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--uv-veryhigh);
+      letter-spacing: -0.5px;
+    }
+
+    /* 渐变色滑块轨道 */
+    .slider-track-wrap {
+      position: relative;
+      height: 10px;
+      border-radius: var(--r-pill);
+      background: linear-gradient(90deg,
+        #22C55E 0% 14%, #EAB308 14% 37%,
+        #F97316 37% 55%, #EF4444 55% 80%,
+        #9333EA 80% 100%
+      );
+      margin-bottom: 8px;
+    }
+
+    /* 滑块拖柄（Figma 中为可拖动组件） */
+    .slider-thumb {
+      position: absolute;
+      width: 22px; height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 50%; left: 72%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border: 2px solid #E8E4DC;
+    }
+
+    .slider-range-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* ── 手动输入框 (无 GPS 模式) ──
+       US3.1 AC: "当系统无法获取坐标时，用户手动输入 UV 值"
+       此区域在 Figma 中作为条件显示（隐藏/显示） */
+    .manual-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .uv-input {
+      flex: 1;
+      background: var(--bg-card2);
+      border: 1.5px solid var(--bg-border);
+      border-radius: var(--r-md);
+      padding: 13px 16px;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .uv-input:focus { border-color: var(--brand-primary); }
+
+    .btn-calculate {
+      padding: 13px 24px;
+      background: var(--brand-primary);
+      color: white; border: none;
+      border-radius: var(--r-md);
+      font-family: var(--font-body);
+      font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.18s;
+      white-space: nowrap;
+    }
+
+    .btn-calculate:hover { background: #e5581f; transform: translateY(-1px); }
+
+    /* ── 计算结果展示 ──
+       US3.1 AC: "系统应计算推荐的防晒霜用量，并以茶匙或泵次显示"
+       两列结果: 茶匙 (teaspoons) + 泵次 (pumps) */
+    .dosage-results {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    /* 单个用量结果卡片 */
+    .dosage-card {
+      background: var(--bg-card2);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 22px 20px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .dosage-card:hover { border-color: var(--brand-primary); }
+
+    .dosage-emoji { font-size: 28px; margin-bottom: 10px; }
+
+    /* 用量数字 — 核心展示元素 */
+    .dosage-number {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .dosage-unit {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .dosage-body-part {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* 应用指南说明框 */
+    .application-guide {
+      background: var(--bg-accent);
+      border: 1px solid rgba(255,107,43,0.18);
+      border-radius: var(--r-lg);
+      padding: 18px 20px;
+    }
+
+    .guide-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--brand-primary);
+      margin-bottom: 10px;
+    }
+
+    .guide-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .guide-list li {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .guide-list li::before {
+      content: '✓';
+      color: var(--brand-primary);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       US3.3 — 着装建议
+       功能: 根据 UV 指数 + 温度输出具体着装建议
+       (面料类型 / 袖长 / 帽型)
+       数据来源: UV Index API + Temperature API
+       ============================================================ */
+    .clothing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 36px;
+      box-shadow: var(--shadow-md);
+    }
+
+    /* ── 条件状态标签 ──
+       显示当前 UV + 温度，是建议的依据 */
+    .condition-tags {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .condition-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: var(--r-pill);
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* ── 着装建议列表 ──
+       US3.3 AC: "系统应输出具体着装建议（面料/袖长/帽型）
+       以平衡热舒适性与最大 UV 防护" */
+    .clothing-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    /* 单条着装建议行 */
+    .clothing-item {
+      background: var(--bg-card2);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-lg);
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .clothing-item:hover {
+      border-color: var(--brand-primary);
+      transform: translateX(4px);
+    }
+
+    .clothing-icon { font-size: 32px; flex-shrink: 0; }
+
+    .clothing-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .clothing-spec {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* 规格标签 — 面料/UPF 等级 */
+    .clothing-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .clothing-tag {
+      display: inline-block;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-sm);
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+    }
+
+    /* 着装建议底部总结框 */
+    .clothing-summary {
+      background: #F0FDF4;
+      border: 1px solid #86EFAC;
+      border-radius: var(--r-lg);
+      padding: 16px 18px;
+      font-size: 13px;
+      color: #166534;
+      line-height: 1.65;
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .footer {
+      border-top: 1px solid var(--bg-border);
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .privacy-badge {
+      background: #F0FDF4; border: 1px solid #86EFAC;
+      border-radius: var(--r-pill); padding: 3px 10px;
+      font-size: 11px; font-weight: 600; color: #16A34A;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVIGATION BAR — active = Protection Tools
+       ============================================================ -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">☀</div>
+      SolarSense
+    </a>
+    <div class="nav-links">
+      <a href="index.html"             class="nav-link">Home</a>
+      <a href="page2-uv-tracker.html"       class="nav-link">UV Tracker</a>
+      <a href="page3-awareness.html"        class="nav-link">Awareness</a>
+      <a href="page4-protection-tools.html" class="nav-link active">Protection Tools</a>
+    </div>
+    <a href="page2-uv-tracker.html" class="btn-nav">Check UV Now →</a>
+  </nav>
+
+
+  <div class="page-wrap">
+
+    <!-- ============================================================
+         PAGE HEADER
+         ============================================================ -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Protection Tools</h1>
+        <p class="page-subtitle">
+          Translate UV numbers into concrete protective actions —
+          exactly how much sunscreen to apply, and what to wear today
+          based on real-time UV and temperature data.
+        </p>
+      </div>
+      <div class="us-tag">US3.1 · US3.3</div>
+    </div>
+
+    <!-- ── 当前环境条件栏 ──
+         两个工具都依赖这些实时数据
+         数据来源: UV Index API + Temperature API + Location CSV -->
+    <div class="current-conditions">
+
+      <div class="condition-item">
+        <div class="condition-icon" style="background:#FEF2F2">☀️</div>
+        <div>
+          <div class="condition-label">UV Index</div>
+          <div class="condition-value" style="color: var(--uv-veryhigh)">9</div>
+        </div>
+      </div>
+
+      <div class="condition-divider"></div>
+
+      <div class="condition-item">
+        <div class="condition-icon" style="background:#FFF7ED">🌡️</div>
+        <div>
+          <div class="condition-label">Temperature</div>
+          <div class="condition-value" style="color: var(--uv-high)">28°C</div>
+        </div>
+      </div>
+
+      <div class="condition-divider"></div>
+
+      <div class="condition-item">
+        <div class="condition-icon" style="background:#F0FDF4">📍</div>
+        <div>
+          <div class="condition-label">Location</div>
+          <div class="condition-value" style="font-size:16px; color: var(--text-primary)">Melbourne, VIC</div>
+        </div>
+      </div>
+
+      <!-- 数据来源标注 -->
+      <div class="condition-source">
+        Real-time data<br>
+        <strong>UV Index API · Temperature API</strong>
+      </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         US3.1 SECTION — 防晒霜用量计算器
+         ============================================================ -->
+    <div class="section-divider">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-label">US3.1 — Sunscreen Dosage Calculator</div>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div class="calculator-card">
+      <div class="tool-header">
+        <div>
+          <div class="tool-title">🧴 Sunscreen Dosage Calculator</div>
+          <div class="tool-sub">
+            Stop guessing. Based on your current UV index, here is exactly
+            how many teaspoons or pump counts you need for adequate protection.
+          </div>
+        </div>
+        <div class="tool-us-tag">US3.1 · Should Have</div>
+      </div>
+
+      <!-- 输入模式切换
+           模式1: GPS 自动获取（默认）
+           模式2: 手动输入（GPS 不可用时） -->
+      <div class="input-mode-tabs">
+        <button class="input-tab active">📍 Auto UV (GPS)</button>
+        <button class="input-tab">✏️ Enter UV Manually</button>
+      </div>
+
+      <!-- GPS 模式: 显示滑块（反映实时 UV = 9）
+           Figma 注: active 状态显示此区域 -->
+      <div class="uv-slider-section">
+        <div class="slider-label-row">
+          <div class="slider-label">Current UV Index — Melbourne, VIC</div>
+          <!-- 当前值以大字显示 -->
+          <div class="slider-current-val">UV 9</div>
+        </div>
+
+        <!-- 渐变色轨道 + 拖柄
+             Figma: range input, 拖动时实时更新结果 -->
+        <div class="slider-track-wrap">
+          <div class="slider-thumb"></div>
+        </div>
+
+        <div class="slider-range-labels">
+          <span>0 · Safe</span>
+          <span>3 · Moderate</span>
+          <span>7 · High</span>
+          <span>11+ · Extreme</span>
+        </div>
+      </div>
+
+      <!-- 手动输入模式（Figma 中作为隐藏状态）
+           US3.1 AC: "当系统无法获取地理坐标时，用户输入 UV 值" -->
+      <!-- <div class="manual-input-group">
+        <input class="uv-input" type="number" placeholder="Enter UV index (e.g. 9)" min="0" max="20">
+        <button class="btn-calculate">Calculate →</button>
+      </div> -->
+
+      <!-- 用量结果 — 三栏展示不同身体部位
+           US3.1 AC: "系统显示以茶匙或泵次为单位的结果"
+           计算公式: 基于 WHO 推荐的每cm² 2mg 防晒霜 -->
+      <div class="dosage-results">
+
+        <!-- 面部 + 颈部用量 -->
+        <div class="dosage-card">
+          <div class="dosage-emoji">😊</div>
+          <div class="dosage-number" style="color: var(--brand-primary)">0.5</div>
+          <div class="dosage-unit">Teaspoons</div>
+          <div class="dosage-body-part">Face & Neck<br>approx. 2 pumps</div>
+        </div>
+
+        <!-- 手臂用量 -->
+        <div class="dosage-card">
+          <div class="dosage-emoji">💪</div>
+          <div class="dosage-number" style="color: var(--uv-high)">1.0</div>
+          <div class="dosage-unit">Teaspoons</div>
+          <div class="dosage-body-part">Arms & Shoulders<br>approx. 4 pumps</div>
+        </div>
+
+        <!-- 身体 + 腿部用量 -->
+        <div class="dosage-card">
+          <div class="dosage-emoji">🦵</div>
+          <div class="dosage-number" style="color: var(--uv-veryhigh)">2.0</div>
+          <div class="dosage-unit">Teaspoons</div>
+          <div class="dosage-body-part">Body & Legs<br>approx. 8 pumps</div>
+        </div>
+
+      </div>
+
+      <!-- 应用指南 — 基于 ABS 防晒行为数据集 -->
+      <div class="application-guide">
+        <div class="guide-title">📋 Application Guide — UV 9</div>
+        <ul class="guide-list">
+          <li>Apply <strong>20 minutes before</strong> going outdoors — sunscreen needs time to bind to skin</li>
+          <li>Reapply every <strong>1.5 hours</strong> at UV 9 (standard is 2hrs, reduced at very high UV)</li>
+          <li>Reapply <strong>immediately</strong> after swimming, sweating, or towel drying regardless of timing</li>
+          <li>Use <strong>SPF 50+</strong> at UV 9 — SPF 30 is insufficient at this level</li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         US3.3 SECTION — 着装建议
+         ============================================================ -->
+    <div class="section-divider">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-label">US3.3 — Sun-Smart Clothing Advisor</div>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div class="clothing-card">
+      <div class="tool-header">
+        <div>
+          <div class="tool-title">👕 Clothing Advisor</div>
+          <div class="tool-sub">
+            Specific clothing recommendations based on UV 9 and 28°C in Melbourne today.
+            Balancing maximum UV protection with thermal comfort.
+          </div>
+        </div>
+        <div class="tool-us-tag">US3.3 · Must Have</div>
+      </div>
+
+      <!-- 当前条件标签 — 建议依据 -->
+      <div class="condition-tags">
+        <div class="condition-tag" style="background:#FEF2F2; color:#EF4444; border: 1px solid rgba(239,68,68,0.2)">
+          ☀️ UV 9 · Very High
+        </div>
+        <div class="condition-tag" style="background:#FFF7ED; color:#F97316; border: 1px solid rgba(249,115,22,0.2)">
+          🌡 28°C · Warm
+        </div>
+        <div class="condition-tag" style="background:#F0FDF4; color:#16A34A; border: 1px solid rgba(22,163,74,0.2)">
+          📍 Melbourne, VIC
+        </div>
+      </div>
+
+      <!-- 着装建议列表
+           US3.3 AC: 输出面料类型、袖长、帽型
+           基于 UV 指数 + 温度 API 综合判断 -->
+      <div class="clothing-list">
+
+        <!-- 建议1: 帽子 -->
+        <div class="clothing-item">
+          <div class="clothing-icon">🧢</div>
+          <div>
+            <div class="clothing-name">Broad-Brim Hat</div>
+            <div class="clothing-spec">
+              Minimum 7.5cm brim to shade face, neck and ears.
+              Covers the most commonly missed areas of UV exposure.
+            </div>
+            <div class="clothing-tags">
+              <span class="clothing-tag">UPF 50+</span>
+              <span class="clothing-tag">Brim ≥ 7.5cm</span>
+              <span class="clothing-tag">Ventilated crown</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 建议2: 上衣 -->
+        <div class="clothing-item">
+          <div class="clothing-icon">👕</div>
+          <div>
+            <div class="clothing-name">Lightweight Long-Sleeve Shirt</div>
+            <div class="clothing-spec">
+              At 28°C, choose breathable UPF-rated fabric. Long sleeves are
+              recommended at UV 9+ to cover arms. Light colours reflect heat better.
+            </div>
+            <div class="clothing-tags">
+              <span class="clothing-tag">UPF 50+</span>
+              <span class="clothing-tag">Long sleeve</span>
+              <span class="clothing-tag">Linen or poly-blend</span>
+              <span class="clothing-tag">Light colour</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 建议3: 下装 -->
+        <div class="clothing-item">
+          <div class="clothing-icon">👖</div>
+          <div>
+            <div class="clothing-name">Light Pants or Midi Skirt</div>
+            <div class="clothing-spec">
+              Cover knees and calves. Loose-fit allows airflow at 28°C.
+              Dark-wash denim provides natural UPF ~1700, but is too hot —
+              opt for light linen or cotton blend instead.
+            </div>
+            <div class="clothing-tags">
+              <span class="clothing-tag">Loose fit</span>
+              <span class="clothing-tag">Linen or cotton</span>
+              <span class="clothing-tag">Covers knees</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 建议4: 太阳镜 -->
+        <div class="clothing-item">
+          <div class="clothing-icon">🕶️</div>
+          <div>
+            <div class="clothing-name">Wraparound Sunglasses</div>
+            <div class="clothing-spec">
+              UV400 rating blocks 99–100% of UVA and UVB. Wraparound
+              style prevents side exposure to the periorbital skin and eyes.
+            </div>
+            <div class="clothing-tags">
+              <span class="clothing-tag">UV400 rating</span>
+              <span class="clothing-tag">Wraparound style</span>
+              <span class="clothing-tag">Polarised optional</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 总结提示 — 热舒适 vs UV 防护平衡原则 -->
+      <div class="clothing-summary">
+        💡 <strong>Comfort tip at 28°C:</strong> Prioritise breathable UPF-rated fabrics
+        (linen, lightweight polyester) over dense materials. Loose-fitting, light-coloured
+        clothing blocks UV radiation while maximising airflow — you don't need to sacrifice
+        comfort for protection.
+      </div>
+    </div>
+
+  </div><!-- /page-wrap -->
+
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="footer">
+    <span>☀ SolarSense · FIT5120 Team 28 · Monash University</span>
+    <span>Data: UV Index API · Temperature API · Location Data CSV · ABS Sun Behaviours</span>
+    <span class="privacy-badge">🔒 No user data stored</span>
+  </footer>
+
+</body>
+</html>

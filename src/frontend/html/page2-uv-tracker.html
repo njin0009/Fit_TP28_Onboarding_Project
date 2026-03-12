@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolarSense – UV Tracker</title>
+
+  <!-- ── 字体引入 ── -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       设计 TOKEN — 与 index.html 保持完全一致
+       ============================================================ */
+    :root {
+      --bg-base:        #FAFAF7;
+      --bg-card:        #FFFFFF;
+      --bg-card2:       #F4F2ED;
+      --bg-border:      #E8E4DC;
+      --bg-accent:      #FFF8EC;
+      --text-primary:   #1A1714;
+      --text-secondary: #6B6560;
+      --text-muted:     #A09990;
+      --brand-primary:  #FF6B2B;
+      --brand-light:    #FFF3EB;
+
+      /* UV 五级颜色 — 严格对应 US1.1 AC 验收标准 */
+      --uv-low:       #22C55E;   /* UV 1-2  绿 */
+      --uv-moderate:  #EAB308;   /* UV 3-5  黄 */
+      --uv-high:      #F97316;   /* UV 6-7  橙 */
+      --uv-veryhigh:  #EF4444;   /* UV 8-10 红 */
+      --uv-extreme:   #9333EA;   /* UV 11+  紫 */
+
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.10);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       NAVIGATION BAR — 与 page1 完全相同结构，active 切换到 UV Tracker
+       ============================================================ */
+    .nav {
+      background: rgba(250,250,247,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--bg-border);
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 48px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 18px; font-weight: 800;
+      color: var(--text-primary); text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 32px; height: 32px; background: var(--brand-primary);
+      border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 16px; color: white;
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 4px; }
+
+    .nav-link {
+      padding: 8px 16px; border-radius: var(--r-md);
+      font-size: 14px; font-weight: 500;
+      color: var(--text-secondary); text-decoration: none;
+      transition: all 0.18s ease;
+    }
+
+    .nav-link:hover  { background: var(--bg-card2); color: var(--text-primary); }
+    .nav-link.active { background: var(--bg-card2); color: var(--text-primary); font-weight: 600; }
+
+    .btn-nav {
+      padding: 10px 22px; background: var(--brand-primary);
+      color: white; border: none; border-radius: var(--r-md);
+      font-family: var(--font-body); font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.18s ease;
+    }
+
+    .btn-nav:hover { background: #e5581f; transform: translateY(-1px); }
+
+    /* ============================================================
+       PAGE HEADER — 页面标题区域
+       显示当前页面名称 + 对应的 US 标签
+       ============================================================ */
+    .page-header {
+      padding: 40px 48px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .page-title-sub {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    .us-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--brand-light);
+      border: 1px solid rgba(255,107,43,0.2);
+      border-radius: var(--r-pill);
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--brand-primary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ============================================================
+       MAIN LAYOUT — 双栏布局
+       左侧: UV 数值展示区（固定宽度）
+       右侧: 警告信息 + 防护建议
+       ============================================================ */
+    .tracker-layout {
+      padding: 0 48px 60px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ============================================================
+       LEFT COLUMN — UV 数值 + 量表 + 提醒设置
+       实现 US1.1 AC: 显示当前 UV 数字 + 颜色编码
+       ============================================================ */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── 地理位置栏 ──
+       系统自动获取用户坐标，映射到城市名
+       数据来源: Location Data CSV + 浏览器 Geolocation API
+       不存储任何位置数据 */
+    .location-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-lg);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .loc-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: #22C55E;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+      flex-shrink: 0;
+      animation: locpulse 2.5s infinite;
+    }
+
+    @keyframes locpulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+      50%       { box-shadow: 0 0 0 6px rgba(34,197,94,0.05); }
+    }
+
+    .loc-city { font-weight: 700; }
+    .loc-auto { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+
+    /* ── UV 大数字卡片 ──
+       US1.1 AC: "系统应显示当前UV指数"
+       卡片背景色随 UV 等级动态变化（通过 JS 切换类名实现）
+       data-level 属性控制当前显示的 UV 等级 */
+    .uv-main-card {
+      background: var(--bg-card);
+      border: 2px solid var(--uv-veryhigh);  /* 当前等级颜色 */
+      border-radius: var(--r-xl);
+      padding: 36px 28px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(239,68,68,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 卡片背景淡色底 */
+    .uv-main-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(239,68,68,0.04);
+      pointer-events: none;
+    }
+
+    .uv-label-sm {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    /* 超大 UV 数字 */
+    .uv-big-number {
+      font-size: 96px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -4px;
+      color: var(--uv-veryhigh);
+      margin-bottom: 12px;
+    }
+
+    /* US1.1 AC: 颜色编码状态徽章 */
+    .uv-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: var(--r-pill);
+      padding: 7px 18px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--uv-veryhigh);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* ── UV 颜色量表 ──
+       US1.1 AC: 直观显示当前 UV 在 1-11+ 范围内的位置
+       渐变色条 + 指针 */
+    .uv-scale-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .scale-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .scale-current-label {
+      color: var(--uv-veryhigh);
+      font-weight: 700;
+    }
+
+    /* 渐变色条: 绿 → 黄 → 橙 → 红 → 紫 */
+    .scale-track {
+      height: 10px;
+      border-radius: var(--r-pill);
+      background: linear-gradient(90deg,
+        #22C55E 0% 14%,    /* Low    */
+        #EAB308 14% 37%,   /* Mod    */
+        #F97316 37% 55%,   /* High   */
+        #EF4444 55% 80%,   /* V.High */
+        #9333EA 80% 100%   /* Extreme*/
+      );
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    /* 当前位置指针（UV 9 = 72% 位置） */
+    .scale-pointer {
+      position: absolute;
+      width: 3px; height: 16px;
+      background: var(--text-primary);
+      border-radius: 2px;
+      top: -3px;
+      left: 72%;
+      transform: translateX(-50%);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    /* 量表下方数字刻度 */
+    .scale-nums {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* ── 五级颜色图例 ──
+       US1.1 AC: "UV 1-2 绿色, UV 3-5 黄色..."
+       每个色块标注对应的 AC 规定 */
+    .uv-legend {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .legend-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    /* 单条图例行 */
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--r-md);
+      transition: background 0.15s;
+    }
+
+    .legend-row:hover { background: var(--bg-card2); }
+
+    /* 当前等级高亮 */
+    .legend-row.active {
+      background: rgba(239,68,68,0.06);
+      border: 1px solid rgba(239,68,68,0.15);
+    }
+
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-range {
+      font-size: 12px;
+      font-weight: 700;
+      width: 40px;
+      flex-shrink: 0;
+    }
+
+    .legend-name { font-size: 13px; font-weight: 600; }
+    .legend-desc { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+
+    /* ── 温度/更新时间 ── */
+    .meta-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .meta-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-md);
+      padding: 14px;
+      text-align: center;
+    }
+
+    .meta-chip-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .meta-chip-value {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    /* ============================================================
+       RIGHT COLUMN — Human Language 警告 + 防护建议
+       这是 US1.1 的核心功能展示区
+       ============================================================ */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── HUMAN LANGUAGE ALERT 卡片 ──
+       US1.1 描述: "不只是显示数字，而是转化为人类语言警告"
+       例如: "Your skin will start damaging in 12 minutes"
+       UV >= 8 时显示高危红色边框 */
+    .alert-card {
+      background: var(--bg-card);
+      border: 2px solid var(--uv-veryhigh);
+      border-radius: var(--r-xl);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(239,68,68,0.1);
+    }
+
+    /* 顶部红色高亮线条 */
+    .alert-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--uv-veryhigh);
+    }
+
+    .alert-tag-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .alert-icon {
+      width: 38px; height: 38px;
+      background: rgba(239,68,68,0.1);
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+
+    .alert-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--uv-veryhigh);
+    }
+
+    /* Human Language 主标题 — 核心用户价值 */
+    .alert-headline {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .alert-body {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+
+    /* 倒计时芯片 — 将 UV 数值转化为"分钟"这一直观单位 */
+    .burn-time-chip {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(239,68,68,0.06);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: var(--r-lg);
+      padding: 16px 20px;
+    }
+
+    .burn-minutes {
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--uv-veryhigh);
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .burn-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .burn-label strong { color: var(--text-primary); }
+
+    /* ── UV >= 3: 防护建议区域 ──
+       US1.1 AC: "当 UV >= 3 时，系统应推荐防护行为"
+       数据来源: ABS Sun Protection Behaviours Dataset */
+    .protection-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* 防护建议 2x2 卡片网格 */
+    .protection-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* 单个防护建议卡片
+       数据来源: ABS Sun Protection Behaviours Dataset */
+    .protection-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-lg);
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-md);
+    }
+
+    .protection-card:hover {
+      border-color: var(--brand-primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .prot-icon { font-size: 28px; }
+    .prot-title { font-size: 13px; font-weight: 700; }
+    .prot-desc  { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* ── UV >= 8: 高危红色警告横幅 ──
+       US1.1 AC: "当 UV >= 8 时，显示高危警告信息"
+       要求: 推荐立即涂防晒霜并寻找遮阴处 */
+    .high-risk-banner {
+      background: rgba(239,68,68,0.06);
+      border: 1.5px solid rgba(239,68,68,0.3);
+      border-radius: var(--r-lg);
+      padding: 18px 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .high-risk-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+
+    .high-risk-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--uv-veryhigh);
+      margin-bottom: 6px;
+    }
+
+    .high-risk-body {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* ── US3.2: 防晒提醒设置 ──
+       功能: 浏览器 Notification API，无需账号，不存储数据
+       基于 UV 指数 + 当前时间计算下次提醒时间 */
+    .reminder-card {
+      background: var(--bg-card);
+      border: 1px solid var(--bg-border);
+      border-radius: var(--r-xl);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .reminder-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .reminder-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    /* Toggle 开关样式 */
+    .toggle {
+      width: 46px; height: 26px;
+      background: var(--brand-primary);
+      border-radius: var(--r-pill);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .toggle-knob {
+      position: absolute;
+      width: 20px; height: 20px;
+      background: white;
+      border-radius: 50%;
+      top: 3px; right: 3px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .reminder-info {
+      background: var(--bg-accent);
+      border: 1px solid rgba(255,107,43,0.15);
+      border-radius: var(--r-md);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .reminder-info strong { color: var(--brand-primary); }
+
+    /* 隐私说明 — 强调不存储数据 */
+    .privacy-note {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .footer {
+      border-top: 1px solid var(--bg-border);
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .privacy-badge {
+      background: #F0FDF4;
+      border: 1px solid #86EFAC;
+      border-radius: var(--r-pill);
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #16A34A;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       NAVIGATION BAR
+       当前页: UV Tracker (active)
+       ============================================================ -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon">☀</div>
+      SolarSense
+    </a>
+    <div class="nav-links">
+      <a href="index.html"            class="nav-link">Home</a>
+      <a href="page2-uv-tracker.html"      class="nav-link active">UV Tracker</a>
+      <a href="page3-awareness.html"       class="nav-link">Awareness</a>
+      <a href="page4-protection-tools.html" class="nav-link">Protection Tools</a>
+    </div>
+    <button class="btn-nav">Enable Reminders 🔔</button>
+  </nav>
+
+
+  <!-- ============================================================
+       PAGE HEADER
+       ============================================================ -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Real-Time UV Tracker</h1>
+      <p class="page-title-sub">Location-aware UV alerts with human-readable warnings — US1.1 · US3.2</p>
+    </div>
+    <div class="us-tag">📍 Melbourne, VIC · Live</div>
+  </div>
+
+
+  <!-- ============================================================
+       MAIN CONTENT — 双栏布局
+       ============================================================ -->
+  <div class="tracker-layout">
+
+    <!-- ═══════════════════════════════════
+         LEFT COLUMN: UV 数值展示
+         ═══════════════════════════════════ -->
+    <div class="left-col">
+
+      <!-- 1. 地理位置栏
+           实现: 浏览器 Geolocation API → Location Data CSV 映射城市名
+           不存储任何位置数据 -->
+      <div class="location-bar">
+        <div class="loc-dot"></div>
+        <span class="loc-city">Melbourne, VIC</span>
+        <span class="loc-auto">Auto-detected · −37.81°, 144.96°</span>
+      </div>
+
+      <!-- 2. UV 大数字卡片
+           US1.1 AC: 显示当前 UV 数值 + 颜色编码
+           数据来源: UV Index API (OpenWeatherMap) -->
+      <div class="uv-main-card">
+        <div class="uv-label-sm">Current UV Index</div>
+        <div class="uv-big-number">9</div>
+        <!-- AC: UV 8-10 = Red = Very High Risk -->
+        <div class="uv-status-badge">⚠ Very High Risk</div>
+      </div>
+
+      <!-- 3. UV 颜色量表
+           US1.1 AC: 直观展示 5 个等级的颜色系统
+           指针显示当前 UV=9 在量表上的位置 -->
+      <div class="uv-scale-card">
+        <div class="scale-header">
+          <span style="color:var(--text-muted); font-size:11px; letter-spacing:2px; text-transform:uppercase">UV Scale</span>
+          <span class="scale-current-label">● 9 — Very High</span>
+        </div>
+        <div class="scale-track">
+          <div class="scale-pointer"></div>
+        </div>
+        <div class="scale-nums">
+          <span>0</span><span>3</span><span>5</span><span>7</span><span>10</span><span>11+</span>
+        </div>
+      </div>
+
+      <!-- 4. 五级颜色图例
+           US1.1 AC 逐条对应:
+           1-2 Green · 3-5 Yellow · 6-7 Orange · 8-10 Red · 11+ Purple -->
+      <div class="uv-legend">
+        <div class="legend-title">UV Risk Levels</div>
+
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#22C55E"></div>
+          <div class="legend-range" style="color:#22C55E">1–2</div>
+          <div class="legend-name">Low Risk</div>
+          <div class="legend-desc">No protection needed</div>
+        </div>
+
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#EAB308"></div>
+          <div class="legend-range" style="color:#EAB308">3–5</div>
+          <div class="legend-name">Moderate</div>
+          <div class="legend-desc">Apply SPF 30+</div>
+        </div>
+
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#F97316"></div>
+          <div class="legend-range" style="color:#F97316">6–7</div>
+          <div class="legend-name">High Risk</div>
+          <div class="legend-desc">Seek shade midday</div>
+        </div>
+
+        <!-- 当前等级高亮 — UV = 9 -->
+        <div class="legend-row active">
+          <div class="legend-dot" style="background:#EF4444"></div>
+          <div class="legend-range" style="color:#EF4444">8–10</div>
+          <div class="legend-name" style="color:#EF4444">Very High ← now</div>
+          <div class="legend-desc">Immediate protection</div>
+        </div>
+
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#9333EA"></div>
+          <div class="legend-range" style="color:#9333EA">11+</div>
+          <div class="legend-name">Extreme</div>
+          <div class="legend-desc">Stay indoors if possible</div>
+        </div>
+      </div>
+
+      <!-- 5. 温度 + 更新时间
+           温度来自 Temperature API，辅助着装建议 -->
+      <div class="meta-row">
+        <div class="meta-chip">
+          <div class="meta-chip-label">Temperature</div>
+          <div class="meta-chip-value" style="color:var(--uv-high)">28°C</div>
+        </div>
+        <div class="meta-chip">
+          <div class="meta-chip-label">Updated</div>
+          <div class="meta-chip-value" style="font-size:15px; color:var(--text-secondary)">2 min ago</div>
+        </div>
+      </div>
+
+    </div><!-- /left-col -->
+
+
+    <!-- ═══════════════════════════════════
+         RIGHT COLUMN: 警告 + 防护建议
+         ═══════════════════════════════════ -->
+    <div class="right-col">
+
+      <!-- 1. Human Language Alert 卡片
+           US1.1 描述核心功能: 不只是显示 UV=9，
+           而是转化为"Your skin starts burning in 12 minutes"
+           倒计时基于 UV 指数计算皮肤受损时间（Fitzpatrick 公式）-->
+      <div class="alert-card">
+        <div class="alert-tag-row">
+          <div class="alert-icon">☀️</div>
+          <div class="alert-eyebrow">⚡ Immediate Action Required</div>
+        </div>
+
+        <!-- Human Language 主标题 — 直接告诉用户剩余时间 -->
+        <div class="alert-headline">
+          Your skin starts burning<br>in 12 minutes
+        </div>
+
+        <div class="alert-body">
+          Even on a cool Melbourne day, UV 9 causes rapid cellular DNA damage
+          that you cannot feel happening. This isn't a gradual process — at this
+          level, skin cell damage accumulates silently and permanently within minutes.
+          Act now, not when you feel it.
+        </div>
+
+        <!-- 倒计时芯片 — 将抽象的 UV 数字转为直观时间 -->
+        <div class="burn-time-chip">
+          <div class="burn-minutes">12</div>
+          <div class="burn-label">
+            minutes until <strong>skin cell damage begins</strong><br>
+            at UV 9 — unprotected fair skin (Fitzpatrick I–III)
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 防护建议标题 -->
+      <!-- US1.1 AC: "当 UV >= 3 时，推荐防护行为" -->
+      <div class="protection-section-label">
+        Recommended Protection — UV ≥ 3 (ABS Guidelines)
+      </div>
+
+      <!-- 3. 防护建议卡片组
+           数据来源: ABS Sun Protection Behaviours Dataset
+           Nov 2023 – Feb 2024 行为数据 -->
+      <div class="protection-grid">
+
+        <div class="protection-card">
+          <div class="prot-icon">🧴</div>
+          <div class="prot-title">SPF 50+ Sunscreen</div>
+          <div class="prot-desc">Apply now, reapply every 2 hours and immediately after swimming or sweating.</div>
+        </div>
+
+        <div class="protection-card">
+          <div class="prot-icon">🌳</div>
+          <div class="prot-title">Seek Shade</div>
+          <div class="prot-desc">Stay under cover between 10am – 3pm, when UV peaks in Victoria.</div>
+        </div>
+
+        <div class="protection-card">
+          <div class="prot-icon">👒</div>
+          <div class="prot-title">Protective Hat</div>
+          <div class="prot-desc">Broad-brim hat (7.5cm+) with UPF 50+ rating covers neck and ears.</div>
+        </div>
+
+        <div class="protection-card">
+          <div class="prot-icon">🕶️</div>
+          <div class="prot-title">UV400 Sunglasses</div>
+          <div class="prot-desc">Protects eyes and periorbital skin. Wraparound style recommended.</div>
+        </div>
+
+      </div>
+
+      <!-- 4. 高危警告横幅
+           US1.1 AC: "当 UV >= 8 时，显示高危警告"
+           仅在 UV >= 8 时显示（当前 UV=9，显示） -->
+      <div class="high-risk-banner">
+        <div class="high-risk-icon">🚨</div>
+        <div>
+          <div class="high-risk-title">High-Risk Warning (UV ≥ 8)</div>
+          <div class="high-risk-body">
+            At UV 9, immediate protective action is essential — not optional.
+            Apply SPF 50+ <em>right now</em>, move into shade, and limit
+            time in direct sunlight. UV damage accumulates even through clouds
+            and cool temperatures.
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. US3.2: 防晒提醒功能
+           实现方式: 浏览器 Notification API
+           不需要账号/登录，不存储任何用户数据
+           提醒间隔根据 UV 指数 + Temperature API 动态计算 -->
+      <div class="reminder-card">
+        <div class="reminder-header">
+          <div class="reminder-title-row">
+            🔔 Sunscreen Reapplication Reminder
+            <span style="font-size:11px; font-weight:500; color:var(--text-muted)">(US3.2)</span>
+          </div>
+          <!-- Toggle 开关: ON 状态 -->
+          <div class="toggle"><div class="toggle-knob"></div></div>
+        </div>
+
+        <!-- 下次提醒时间 — 基于 UV 9 计算为每 1.5 小时 -->
+        <div class="reminder-info">
+          Next reminder in <strong>1h 47m</strong> — Reapply SPF 50+ at
+          <strong>2:30 PM</strong> based on current UV 9 and 28°C temperature.
+          Interval calculated from UV severity + temperature exposure.
+        </div>
+
+        <!-- 隐私声明 — 明确不存储数据 -->
+        <div class="privacy-note">
+          <span>🔒</span>
+          <span>Uses browser notifications only. No account needed.
+          Your location is <strong>not saved</strong> — used in-session only.
+          Reminder timing is calculated locally in your browser.</span>
+        </div>
+      </div>
+
+    </div><!-- /right-col -->
+  </div><!-- /tracker-layout -->
+
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="footer">
+    <span>☀ SolarSense · FIT5120 Team 28 · Monash University</span>
+    <span>Data: OpenWeatherMap UV API · Location CSV · ABS Sun Behaviours</span>
+    <span class="privacy-badge">🔒 No user data stored</span>
+  </footer>
+
+</body>
+</html>
