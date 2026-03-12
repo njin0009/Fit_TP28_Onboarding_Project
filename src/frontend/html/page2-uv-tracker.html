@@ -823,42 +823,13 @@
         </div>
       </div>
 
-      <!-- 2. 防护建议标题 -->
-      <!-- US1.1 AC: "当 UV >= 3 时，推荐防护行为" -->
-      <div class="protection-section-label">
+      <!-- 2. 防护建议标题 — 动态更新 -->
+      <div class="protection-section-label" id="protection-label">
         Recommended Protection — UV ≥ 3 (ABS Guidelines)
       </div>
 
-      <!-- 3. 防护建议卡片组
-           数据来源: ABS Sun Protection Behaviours Dataset
-           Nov 2023 – Feb 2024 行为数据 -->
-      <div class="protection-grid">
-
-        <div class="protection-card">
-          <div class="prot-icon">🧴</div>
-          <div class="prot-title">SPF 50+ Sunscreen</div>
-          <div class="prot-desc">Apply now, reapply every 2 hours and immediately after swimming or sweating.</div>
-        </div>
-
-        <div class="protection-card">
-          <div class="prot-icon">🌳</div>
-          <div class="prot-title">Seek Shade</div>
-          <div class="prot-desc">Stay under cover between 10am – 3pm, when UV peaks in Victoria.</div>
-        </div>
-
-        <div class="protection-card">
-          <div class="prot-icon">👒</div>
-          <div class="prot-title">Protective Hat</div>
-          <div class="prot-desc">Broad-brim hat (7.5cm+) with UPF 50+ rating covers neck and ears.</div>
-        </div>
-
-        <div class="protection-card">
-          <div class="prot-icon">🕶️</div>
-          <div class="prot-title">UV400 Sunglasses</div>
-          <div class="prot-desc">Protects eyes and periorbital skin. Wraparound style recommended.</div>
-        </div>
-
-      </div>
+      <!-- 3. 防护建议卡片组 — 由 JS 动态渲染 -->
+      <div class="protection-grid" id="protection-grid"></div>
 
       <!-- 4. 高危警告横幅
            US1.1 AC: "当 UV >= 8 时，显示高危警告"
@@ -1104,8 +1075,95 @@
         banner.style.display = 'none';
       }
 
-      // ── 8. 更新 US3.2 提醒用的 UV 值 ──
+      // ── 8. 动态防护建议 (ABS Guidelines) ──
+      updateProtectionCards(uv, level);
+
+      // ── 9. 更新 US3.2 提醒用的 UV 值 ──
       currentUVForReminder = uv;
+    }
+
+    // ╔══════════════════════════════════════════════════════════════
+    // ║  动态防护建议渲染
+    // ║  数据来源: ABS Sun Protection Behaviours Dataset Nov2023–Feb2024
+    // ╚══════════════════════════════════════════════════════════════
+    const PROTECTION_DATA = {
+      low: {
+        label: 'UV 1–2 — Minimal Risk (ABS Guidelines)',
+        cards: [
+          { icon:'😎', title:'No Protection Required',
+            desc:'UV is low. Enjoy outdoor activities freely. Fair-skinned individuals may still apply SPF 30+ for extended exposure.' },
+          { icon:'💧', title:'Stay Hydrated',
+            desc:'Low UV does not mean no sun. Keep hydrated outdoors and reapply sunscreen if staying out over 2 hours.' },
+        ]
+      },
+      moderate: {
+        label: 'UV 3–5 — Protection Recommended (ABS Guidelines)',
+        cards: [
+          { icon:'🧴', title:'SPF 30+ Sunscreen',
+            desc:'Apply 20 minutes before going out. Reapply every 2 hours, especially after sweating.' },
+          { icon:'👒', title:'Wear a Hat',
+            desc:'A broad-brim hat reduces UV exposure to face and neck by up to 50%.' },
+          { icon:'🕶️', title:'UV400 Sunglasses',
+            desc:'Protects eyes from UV radiation. Wraparound style recommended for full coverage.' },
+          { icon:'🌳', title:'Seek Shade at Midday',
+            desc:'UV peaks between 10am–3pm in Victoria. Use shade when possible.' },
+        ]
+      },
+      high: {
+        label: 'UV 6–7 — Protection Required (ABS Guidelines)',
+        cards: [
+          { icon:'🧴', title:'SPF 50+ Sunscreen — Now',
+            desc:'Apply generously 20 min before going out. Reapply every 1.5–2 hours and after water exposure.' },
+          { icon:'👕', title:'Protective Clothing',
+            desc:'UPF 50+ rated long sleeves cover up to 98% of UV. Darker colours provide better protection.' },
+          { icon:'👒', title:'Broad-Brim Hat (7.5cm+)',
+            desc:'UPF 50+ broad-brim hat recommended. Covers ears, neck, and face from direct UV.' },
+          { icon:'🌳', title:'Avoid Peak UV Hours',
+            desc:'Stay indoors or in shade between 10am–2pm. At UV 6–7, skin damage begins within 20–30 min.' },
+        ]
+      },
+      veryhigh: {
+        label: '⚠ UV 8–10 — Immediate Protection Required',
+        cards: [
+          { icon:'🧴', title:'SPF 50+ Sunscreen — Urgent',
+            desc:'Apply right now. At UV 8+, unprotected skin can start to burn in under 15 minutes.' },
+          { icon:'👕', title:'Cover All Exposed Skin',
+            desc:'Wear UPF 50+ clothing. Even brief exposure without protection accumulates permanent cell damage.' },
+          { icon:'🌳', title:'Stay in Shade — Not Optional',
+            desc:'Seek deep shade between 10am–3pm. Buildings or dense tree cover only — partial shade is insufficient.' },
+          { icon:'🚫', title:'Reschedule Outdoor Activity',
+            desc:'Move outdoor plans to before 9am or after 4pm when UV levels are significantly lower.' },
+        ]
+      },
+      extreme: {
+        label: '🚨 UV 11+ — Extreme Risk, Stay Indoors',
+        cards: [
+          { icon:'🏠', title:'Stay Indoors If Possible',
+            desc:'UV 11+ is extreme. The safest option is to avoid outdoor exposure entirely during peak hours.' },
+          { icon:'🧴', title:'SPF 50+ If You Must Go Out',
+            desc:'Apply SPF 50+ 20 min before any exposure. Reapply every hour. No sunscreen blocks 100% of UV.' },
+          { icon:'👕', title:'Full Coverage Clothing',
+            desc:'Long sleeves, long pants, UPF 50+ fabric. Leave no skin exposed. Hats with neck flaps recommended.' },
+          { icon:'⏰', title:'Limit Outdoor Time',
+            desc:'Even with full protection, limit unshaded outdoor exposure to 10–15 minutes maximum.' },
+        ]
+      },
+    };
+
+    function updateProtectionCards(uv, level) {
+      const grid  = document.getElementById('protection-grid');
+      const lbl   = document.getElementById('protection-label');
+      if (!grid) return;
+      const data = PROTECTION_DATA[level.key] || PROTECTION_DATA.moderate;
+      lbl.textContent  = data.label;
+      lbl.style.color  = uv <= 2 ? '#16A34A' : level.color;
+      grid.innerHTML   = data.cards.map(card => `
+        <div class="protection-card" style="border-color:${uv >= 8 ? level.color : 'var(--bg-border)'}">
+          <div class="prot-icon">${card.icon}</div>
+          <div class="prot-title">${card.title}</div>
+          <div class="prot-desc">${card.desc}</div>
+        </div>
+      `).join('');
     }
 
     // ╔══════════════════════════════════════════════════════════════
