@@ -778,111 +778,61 @@
       <div class="tool-header">
         <div>
           <div class="tool-title">👕 Clothing Advisor</div>
-          <div class="tool-sub">
-            Specific clothing recommendations based on UV 9 and 28°C in Melbourne today.
+          <div class="tool-sub" id="clothing-sub">
+            Adjust UV and temperature to get personalised clothing recommendations.
             Balancing maximum UV protection with thermal comfort.
           </div>
         </div>
         <div class="tool-us-tag">US3.3 · Must Have</div>
       </div>
 
-      <!-- 当前条件标签 — 建议依据 -->
-      <div class="condition-tags">
-        <div class="condition-tag" style="background:#FEF2F2; color:#EF4444; border: 1px solid rgba(239,68,68,0.2)">
-          ☀️ UV 9 · Very High
-        </div>
-        <div class="condition-tag" style="background:#FFF7ED; color:#F97316; border: 1px solid rgba(249,115,22,0.2)">
-          🌡 28°C · Warm
-        </div>
-        <div class="condition-tag" style="background:#F0FDF4; color:#16A34A; border: 1px solid rgba(22,163,74,0.2)">
-          📍 Melbourne, VIC
-        </div>
-      </div>
+      <!-- ── UV + 温度双滑块 ──
+           后端接入后: 将 clothingUV / clothingTemp 的初始值替换为 API 返回值 -->
+      <div style="display:flex; gap:32px; margin-bottom:28px; flex-wrap:wrap;">
 
-      <!-- 着装建议列表
-           US3.3 AC: 输出面料类型、袖长、帽型
-           基于 UV 指数 + 温度 API 综合判断 -->
-      <div class="clothing-list">
-
-        <!-- 建议1: 帽子 -->
-        <div class="clothing-item">
-          <div class="clothing-icon">🧢</div>
-          <div>
-            <div class="clothing-name">Broad-Brim Hat</div>
-            <div class="clothing-spec">
-              Minimum 7.5cm brim to shade face, neck and ears.
-              Covers the most commonly missed areas of UV exposure.
-            </div>
-            <div class="clothing-tags">
-              <span class="clothing-tag">UPF 50+</span>
-              <span class="clothing-tag">Brim ≥ 7.5cm</span>
-              <span class="clothing-tag">Ventilated crown</span>
-            </div>
+        <!-- UV 滑块 -->
+        <div style="flex:1; min-width:220px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:2px; text-transform:uppercase;">UV Index</span>
+            <span id="clothing-uv-label" style="font-size:22px; font-weight:800; color:#EF4444;">UV 9</span>
+          </div>
+          <div id="clothing-uv-track" style="height:10px; border-radius:999px; background:linear-gradient(90deg,#22C55E 0% 14%,#EAB308 14% 35%,#F97316 35% 55%,#EF4444 55% 80%,#9333EA 80% 100%); position:relative; cursor:pointer; user-select:none;">
+            <div id="clothing-uv-thumb" style="position:absolute; width:22px; height:22px; background:white; border-radius:50%; top:50%; left:64%; transform:translate(-50%,-50%); box-shadow:0 2px 8px rgba(0,0,0,0.18); border:2px solid #E8E4DC; transition:left 0.05s;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:6px; font-weight:600;">
+            <span>0 · Safe</span><span>3 · Mod</span><span>7 · High</span><span>11+ · Extreme</span>
           </div>
         </div>
 
-        <!-- 建议2: 上衣 -->
-        <div class="clothing-item">
-          <div class="clothing-icon">👕</div>
-          <div>
-            <div class="clothing-name">Lightweight Long-Sleeve Shirt</div>
-            <div class="clothing-spec">
-              At 28°C, choose breathable UPF-rated fabric. Long sleeves are
-              recommended at UV 9+ to cover arms. Light colours reflect heat better.
-            </div>
-            <div class="clothing-tags">
-              <span class="clothing-tag">UPF 50+</span>
-              <span class="clothing-tag">Long sleeve</span>
-              <span class="clothing-tag">Linen or poly-blend</span>
-              <span class="clothing-tag">Light colour</span>
-            </div>
+        <!-- 温度滑块 -->
+        <div style="flex:1; min-width:220px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:2px; text-transform:uppercase;">Temperature</span>
+            <span id="clothing-temp-label" style="font-size:22px; font-weight:800; color:#F97316;">28°C</span>
           </div>
-        </div>
-
-        <!-- 建议3: 下装 -->
-        <div class="clothing-item">
-          <div class="clothing-icon">👖</div>
-          <div>
-            <div class="clothing-name">Light Pants or Midi Skirt</div>
-            <div class="clothing-spec">
-              Cover knees and calves. Loose-fit allows airflow at 28°C.
-              Dark-wash denim provides natural UPF ~1700, but is too hot —
-              opt for light linen or cotton blend instead.
-            </div>
-            <div class="clothing-tags">
-              <span class="clothing-tag">Loose fit</span>
-              <span class="clothing-tag">Linen or cotton</span>
-              <span class="clothing-tag">Covers knees</span>
-            </div>
+          <div id="clothing-temp-track" style="height:10px; border-radius:999px; background:linear-gradient(90deg,#93C5FD 0%,#6EE7B7 30%,#FDE047 60%,#F97316 82%,#EF4444 100%); position:relative; cursor:pointer; user-select:none;">
+            <div id="clothing-temp-thumb" style="position:absolute; width:22px; height:22px; background:white; border-radius:50%; top:50%; left:65%; transform:translate(-50%,-50%); box-shadow:0 2px 8px rgba(0,0,0,0.18); border:2px solid #E8E4DC; transition:left 0.05s;"></div>
           </div>
-        </div>
-
-        <!-- 建议4: 太阳镜 -->
-        <div class="clothing-item">
-          <div class="clothing-icon">🕶️</div>
-          <div>
-            <div class="clothing-name">Wraparound Sunglasses</div>
-            <div class="clothing-spec">
-              UV400 rating blocks 99–100% of UVA and UVB. Wraparound
-              style prevents side exposure to the periorbital skin and eyes.
-            </div>
-            <div class="clothing-tags">
-              <span class="clothing-tag">UV400 rating</span>
-              <span class="clothing-tag">Wraparound style</span>
-              <span class="clothing-tag">Polarised optional</span>
-            </div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-top:6px; font-weight:600;">
+            <span>0°C</span><span>15°C</span><span>25°C</span><span>40°C</span>
           </div>
         </div>
 
       </div>
 
-      <!-- 总结提示 — 热舒适 vs UV 防护平衡原则 -->
-      <div class="clothing-summary">
-        💡 <strong>Comfort tip at 28°C:</strong> Prioritise breathable UPF-rated fabrics
-        (linen, lightweight polyester) over dense materials. Loose-fitting, light-coloured
-        clothing blocks UV radiation while maximising airflow — you don't need to sacrifice
-        comfort for protection.
+      <!-- 当前条件标签 — JS 动态更新 -->
+      <div class="condition-tags" id="clothing-condition-tags">
+        <div class="condition-tag" id="tag-uv" style="background:#FEF2F2; color:#EF4444; border:1px solid rgba(239,68,68,0.2)">☀️ UV 9 · Very High</div>
+        <div class="condition-tag" id="tag-temp" style="background:#FFF7ED; color:#F97316; border:1px solid rgba(249,115,22,0.2)">🌡 28°C · Warm</div>
+        <div class="condition-tag" style="background:#F0FDF4; color:#16A34A; border:1px solid rgba(22,163,74,0.2)">📍 Melbourne, VIC</div>
       </div>
+
+      <!-- 着装建议列表 — JS 动态替换内容 -->
+      <div class="clothing-list" id="clothing-list"></div>
+
+      <!-- 总结提示 — JS 动态更新 -->
+      <div class="clothing-summary" id="clothing-summary"></div>
+
     </div>
 
   </div><!-- /page-wrap -->
@@ -1002,6 +952,288 @@
     // 初始化显示 UV 9
     updateCalculator(9);
   </script>
+
+  <!-- ============================================================
+       US3.3 — Clothing Advisor JS
+       逻辑: UV 滑块 + 温度滑块 → 动态生成着装建议
+       决策矩阵: UV 等级 (5档) × 温度区间 (3档) = 15种组合
+       后端接入: 将 clothingUV / clothingTemp 初始值替换为 API 值
+       不存储任何数据
+       ============================================================ -->
+  <script>
+    // ── 当前值（后端接入后替换初始值）──
+    let clothingUV   = 9;
+    let clothingTemp = 28;
+
+    // ── UV 等级配置 ──
+    const UV_CONFIG = [
+      { max:2,  label:'Low',       color:'#22C55E', bg:'#F0FDF4', borderAlpha:'rgba(34,197,94,0.2)'   },
+      { max:5,  label:'Moderate',  color:'#EAB308', bg:'#FEFCE8', borderAlpha:'rgba(234,179,8,0.2)'   },
+      { max:7,  label:'High',      color:'#F97316', bg:'#FFF7ED', borderAlpha:'rgba(249,115,22,0.2)'  },
+      { max:10, label:'Very High', color:'#EF4444', bg:'#FEF2F2', borderAlpha:'rgba(239,68,68,0.2)'   },
+      { max:20, label:'Extreme',   color:'#9333EA', bg:'#FAF5FF', borderAlpha:'rgba(147,51,234,0.2)'  },
+    ];
+
+    function getUVConfig(uv) { return UV_CONFIG.find(c => uv <= c.max); }
+
+    // 温度分区: Cool(<18) / Warm(18-28) / Hot(>28)
+    function getTempZone(t) {
+      if (t < 18) return 'cool';
+      if (t <= 28) return 'warm';
+      return 'hot';
+    }
+
+    // ── 着装数据库 ──
+    // 格式: items[] 每项 { icon, name, spec, tags[] }
+    const CLOTHING_DB = {
+
+      // ── UV Low (1-2) ──
+      'low-cool': {
+        summary: '🌤 Low UV and cool temperature — light layers are enough today.',
+        items: [
+          { icon:'🧢', name:'Baseball Cap or Beanie', spec:'Low UV means minimal shade protection needed. A cap keeps warmth while offering basic face coverage.', tags:['Any style','Optional UPF'] },
+          { icon:'👕', name:'Long-Sleeve Top or Light Jacket', spec:'Cool weather calls for warmth. A regular long-sleeve top or light jacket is sufficient — no UPF rating required at UV 1-2.', tags:['Cotton or fleece','Long sleeve','Comfort priority'] },
+          { icon:'👖', name:'Full-Length Pants', spec:'Comfortable full-length pants for warmth. UV protection is low priority today.', tags:['Any fabric','Full length'] },
+          { icon:'🕶️', name:'Sunglasses (Optional)', spec:'UV is low but UV400 glasses are always a good habit, especially in reflective environments like water or snow.', tags:['Optional','UV400 if wearing'] },
+        ]
+      },
+      'low-warm': {
+        summary: '🌤 Low UV and pleasant temperature — stay comfortable, minimal sun protection needed.',
+        items: [
+          { icon:'🧢', name:'Cap or Hat (Optional)', spec:'UV is low. A hat is optional but a good habit to maintain daily.', tags:['Optional','Any style'] },
+          { icon:'👕', name:'Short or Long-Sleeve Top', spec:'Any fabric works at UV 1-2. Dress for thermal comfort — no UPF required.', tags:['Any fabric','Your preference'] },
+          { icon:'👖', name:'Shorts or Pants', spec:'UV is low enough that shorts are fine. Dress for the warm temperature.', tags:['Any length','Comfort priority'] },
+          { icon:'🕶️', name:'Sunglasses (Optional)', spec:'Good habit even on low UV days. UV400 rating recommended if worn.', tags:['Optional','UV400'] },
+        ]
+      },
+      'low-hot': {
+        summary: '🌤 Low UV but hot — dress for heat. Minimal UV protection needed.',
+        items: [
+          { icon:'🧢', name:'Lightweight Cap', spec:'Provides shade and reduces heat. UV is low so any hat style works.', tags:['Ventilated','Any style'] },
+          { icon:'👕', name:'Light Short-Sleeve or Tank', spec:'Heat is the main concern today. Breathable, light-coloured fabrics to stay cool.', tags:['Breathable','Light colour','Short sleeve ok'] },
+          { icon:'👖', name:'Shorts or Light Pants', spec:'Dress for comfort in the heat. UV coverage is not critical at this level.', tags:['Breathable','Loose fit'] },
+          { icon:'🕶️', name:'Sunglasses', spec:'Recommended in bright conditions even at low UV.', tags:['UV400','Polarised helpful'] },
+        ]
+      },
+
+      // ── UV Moderate (3-5) ──
+      'moderate-cool': {
+        summary: '🌤 Moderate UV — protection recommended. Layers for warmth and coverage.',
+        items: [
+          { icon:'🧢', name:'Wide-Brim Hat', spec:'At UV 3-5, a wide-brim hat provides meaningful protection for face and neck.', tags:['Brim ≥ 5cm','UPF rated preferred'] },
+          { icon:'👕', name:'Long-Sleeve Top', spec:'Long sleeves recommended at moderate UV. Cool weather makes this comfortable — any fabric works.', tags:['Long sleeve','Cotton or wool','Light colour preferred'] },
+          { icon:'👖', name:'Full-Length Pants', spec:'Full coverage for legs. Cool temperature makes long pants the obvious choice.', tags:['Full length','Any fabric'] },
+          { icon:'🕶️', name:'UV400 Sunglasses', spec:'Start wearing UV400 sunglasses consistently at moderate UV levels.', tags:['UV400 required','Wraparound preferred'] },
+        ]
+      },
+      'moderate-warm': {
+        summary: '☀️ Moderate UV and warm — cover up with light breathable fabrics.',
+        items: [
+          { icon:'🧢', name:'Wide-Brim Hat', spec:'A wide brim provides better neck and ear protection than a cap. Ventilated styles stay comfortable in warmth.', tags:['Brim ≥ 5cm','Ventilated','UPF preferred'] },
+          { icon:'👕', name:'Light Long-Sleeve Shirt', spec:'Long sleeves are recommended at UV 3-5. Choose breathable linen or cotton to stay comfortable.', tags:['UPF 30+','Long sleeve','Linen or cotton','Light colour'] },
+          { icon:'👖', name:'Light Pants or Midi Skirt', spec:'Cover to the knee at minimum. Breathable fabric keeps you comfortable at warm temperatures.', tags:['Loose fit','Covers knees','Linen or cotton'] },
+          { icon:'🕶️', name:'UV400 Sunglasses', spec:'UV400 sunglasses are important at moderate UV and above. Wraparound frames offer better side coverage.', tags:['UV400','Wraparound'] },
+        ]
+      },
+      'moderate-hot': {
+        summary: '☀️ Moderate UV and hot — lightweight protection, prioritise breathability.',
+        items: [
+          { icon:'🧢', name:'Wide-Brim Ventilated Hat', spec:'Critical for face and neck shade in the heat. Mesh-crown styles improve airflow significantly.', tags:['Ventilated crown','Brim ≥ 5cm','UPF 50+'] },
+          { icon:'👕', name:'Breathable UPF Long-Sleeve', spec:'Moisture-wicking UPF-rated shirts feel cooler than unprotected skin in direct sun. Avoid heavy cotton.', tags:['UPF 30–50+','Moisture-wicking','Long sleeve','Light colour'] },
+          { icon:'👖', name:'Lightweight Loose Pants or Shorts + Sunscreen', spec:'In extreme heat, shorts with SPF 50+ on legs is acceptable at moderate UV. Loose linen pants are more comfortable.', tags:['Your preference','Linen if pants','SPF if shorts'] },
+          { icon:'🕶️', name:'UV400 Sunglasses', spec:'Protect periorbital skin and eyes. Polarised lenses reduce glare in bright sun.', tags:['UV400','Polarised recommended'] },
+        ]
+      },
+
+      // ── UV High (6-7) ──
+      'high-cool': {
+        summary: '🔶 High UV — full coverage recommended. Cool weather makes this easy.',
+        items: [
+          { icon:'🧢', name:'Broad-Brim Hat UPF 50+', spec:'At UV 6-7, full brim coverage is important. Minimum 7.5cm brim to shade face, neck and ears.', tags:['UPF 50+','Brim ≥ 7.5cm'] },
+          { icon:'👕', name:'UPF Long-Sleeve Top', spec:'Long sleeves required at high UV. Cool weather makes full coverage comfortable.', tags:['UPF 50+','Long sleeve','Tightly woven'] },
+          { icon:'👖', name:'Full-Length Pants', spec:'Full leg coverage at high UV. Cool temperature makes long pants ideal.', tags:['Full length','UPF rated preferred'] },
+          { icon:'🕶️', name:'Wraparound UV400 Sunglasses', spec:'Wraparound style essential at high UV to prevent side UV exposure to eyes.', tags:['UV400','Wraparound required'] },
+        ]
+      },
+      'high-warm': {
+        summary: '🔶 High UV and warm — UPF-rated fabrics required, balance coverage with breathability.',
+        items: [
+          { icon:'🧢', name:'Broad-Brim Hat UPF 50+', spec:'Minimum 7.5cm brim to shade face, neck and ears. Ventilated crown for comfort at warm temperatures.', tags:['UPF 50+','Brim ≥ 7.5cm','Ventilated'] },
+          { icon:'👕', name:'Lightweight UPF Long-Sleeve Shirt', spec:'At warm temperatures, lightweight poly-blend or linen UPF shirts maintain protection without overheating.', tags:['UPF 50+','Long sleeve','Linen or poly-blend','Light colour'] },
+          { icon:'👖', name:'Light Pants or Midi Skirt', spec:'Cover knees and calves. Loose-fit linen allows airflow at UV 6-7 and warm temperatures.', tags:['Loose fit','Linen or cotton','Covers knees'] },
+          { icon:'🕶️', name:'Wraparound UV400 Sunglasses', spec:'Wraparound frames prevent UV from entering sides. Polarised lenses reduce glare.', tags:['UV400','Wraparound','Polarised optional'] },
+        ]
+      },
+      'high-hot': {
+        summary: '🔶 High UV and hot — maximum breathability with full UV coverage.',
+        items: [
+          { icon:'🧢', name:'Broad-Brim Ventilated Hat UPF 50+', spec:'Essential. Mesh-crown ventilation critical in the heat. Minimum 7.5cm brim.', tags:['UPF 50+','Brim ≥ 7.5cm','Mesh crown'] },
+          { icon:'👕', name:'Moisture-Wicking UPF Long-Sleeve', spec:'Performance UPF shirts with moisture-wicking technology feel cooler than unprotected skin in direct sun. Light colours only.', tags:['UPF 50+','Moisture-wicking','Long sleeve','Light colour'] },
+          { icon:'👖', name:'Loose Linen Pants or UPF Skirt', spec:'Full coverage legs in loose linen maximises airflow. Avoid dark colours that absorb heat.', tags:['UPF rated','Loose fit','Light linen','Covers knees'] },
+          { icon:'🕶️', name:'Wraparound UV400 Sunglasses', spec:'UV400 wraparound required. Polarised lenses reduce glare in intense heat.', tags:['UV400','Wraparound','Polarised recommended'] },
+        ]
+      },
+
+      // ── UV Very High (8-10) ──
+      'veryhigh-cool': {
+        summary: '🔴 Very High UV — maximum coverage. Cool weather — no excuse not to be fully covered.',
+        items: [
+          { icon:'🧢', name:'UPF 50+ Broad-Brim Hat', spec:'Full brim ≥ 7.5cm required at Very High UV. Legionnaire style also protects neck.', tags:['UPF 50+','Brim ≥ 7.5cm','Or legionnaire'] },
+          { icon:'👕', name:'UPF 50+ Long-Sleeve Shirt', spec:'Tightly woven UPF 50+ fabric required. Cool weather makes full coverage easy and comfortable.', tags:['UPF 50+','Long sleeve','Tightly woven'] },
+          { icon:'👖', name:'Full-Length UPF Pants', spec:'Full leg coverage essential. Cool temperature makes heavy fabric acceptable.', tags:['UPF rated','Full length'] },
+          { icon:'🕶️', name:'Wraparound UV400 Sunglasses', spec:'Non-negotiable at Very High UV. Protect eyes and periorbital skin.', tags:['UV400','Wraparound required'] },
+        ]
+      },
+      'veryhigh-warm': {
+        summary: '🔴 Very High UV and warm — full UPF coverage required, lightweight fabrics essential.',
+        items: [
+          { icon:'🧢', name:'UPF 50+ Broad-Brim Hat', spec:'Minimum 7.5cm brim. Ventilated crown critical at warm temperatures. Legionnaire style adds neck protection.', tags:['UPF 50+','Brim ≥ 7.5cm','Ventilated crown'] },
+          { icon:'👕', name:'Lightweight UPF 50+ Long-Sleeve', spec:'At Very High UV, full arm coverage is essential. Choose breathable linen or performance poly-blend.', tags:['UPF 50+','Long sleeve','Linen or poly-blend','Light colour'] },
+          { icon:'👖', name:'Light UPF Pants or Long Skirt', spec:'Full leg coverage. Loose-fit breathable fabric keeps you cool. Avoid short shorts at UV 8+.', tags:['UPF rated','Full length','Loose fit','Light colour'] },
+          { icon:'🕶️', name:'Wraparound UV400 Sunglasses', spec:'Required at Very High UV. Wraparound frames prevent side UV exposure.', tags:['UV400','Wraparound required','Polarised recommended'] },
+        ]
+      },
+      'veryhigh-hot': {
+        summary: '🔴 Very High UV and hot — maximum protection, maximum breathability. Consider staying indoors 10am–3pm.',
+        items: [
+          { icon:'🧢', name:'Vented UPF 50+ Broad-Brim Hat', spec:'Critical. Choose hats with mesh ventilation panels. Minimum 7.5cm brim. Legionnaire adds neck coverage.', tags:['UPF 50+','Brim ≥ 7.5cm','Mesh ventilation','Or legionnaire'] },
+          { icon:'👕', name:'Moisture-Wicking UPF 50+ Long-Sleeve', spec:'Performance fabric only in hot weather. Moisture-wicking UPF shirts keep you cooler than exposed skin. Light colours reflect heat.', tags:['UPF 50+','Moisture-wicking','Long sleeve','Light colour only'] },
+          { icon:'👖', name:'Loose Linen UPF Pants or Long Skirt', spec:'Full coverage essential. Loose linen maximises airflow. Avoid any fabric that traps heat.', tags:['UPF rated','Full length','Loose linen','Light colour'] },
+          { icon:'🕶️', name:'Wraparound UV400 Sunglasses', spec:'Non-negotiable. Polarised and wraparound for maximum protection in intense conditions.', tags:['UV400','Wraparound required','Polarised recommended'] },
+        ]
+      },
+
+      // ── UV Extreme (11+) ──
+      'extreme-cool': {
+        summary: '🟣 Extreme UV — avoid outdoor exposure if possible. Full protection if you must go out.',
+        items: [
+          { icon:'🧢', name:'UPF 50+ Full-Coverage Hat', spec:'Legionnaire or broad-brim ≥ 7.5cm with neck flap. Maximum head and neck coverage.', tags:['UPF 50+','Legionnaire preferred','Brim ≥ 7.5cm'] },
+          { icon:'👕', name:'UPF 50+ Long-Sleeve — Full Cover', spec:'Tightly woven UPF 50+ only. Consider a lightweight UV-protective jacket at extreme levels.', tags:['UPF 50+','Long sleeve','Tightly woven','Full coverage'] },
+          { icon:'👖', name:'Full-Length UPF Pants', spec:'Full leg coverage mandatory at UV 11+.', tags:['UPF 50+','Full length'] },
+          { icon:'🕶️', name:'Wraparound UV400 Sunglasses', spec:'Mandatory at Extreme UV. Consider UV-protective goggles for extended outdoor work.', tags:['UV400','Wraparound mandatory'] },
+        ]
+      },
+      'extreme-warm': {
+        summary: '🟣 Extreme UV and warm — seek shade, minimise exposure time. Full UPF protection mandatory.',
+        items: [
+          { icon:'🧢', name:'UPF 50+ Legionnaire or Broad-Brim Hat', spec:'Full neck and face coverage. Legionnaire hats are ideal for Extreme UV — they cover the neck completely.', tags:['UPF 50+','Legionnaire or ≥7.5cm brim','Neck coverage'] },
+          { icon:'👕', name:'UPF 50+ Long-Sleeve — Lightweight', spec:'Full arm coverage mandatory at Extreme UV. Lightweight breathable UPF 50+ fabric.', tags:['UPF 50+','Long sleeve','Breathable fabric','Light colour'] },
+          { icon:'👖', name:'Full-Length UPF Pants or Long Skirt', spec:'Full leg coverage required. Breathable loose fabric for warmth management.', tags:['UPF 50+','Full length','Loose fit'] },
+          { icon:'🕶️', name:'Wraparound UV400 Sunglasses', tags:['UV400','Wraparound mandatory','Polarised recommended'],
+            spec:'Non-negotiable at Extreme UV. Eyes are at high risk of UV damage in short exposure times.' },
+        ]
+      },
+      'extreme-hot': {
+        summary: '🟣 Extreme UV and very hot — strongly recommend staying indoors 10am–3pm. If outdoors, maximum protection every minute.',
+        items: [
+          { icon:'🧢', name:'Vented UPF 50+ Legionnaire Hat', spec:'Maximum head and neck coverage with ventilation. Legionnaire with mesh panels is ideal for Extreme UV in heat.', tags:['UPF 50+','Legionnaire','Mesh ventilation','Mandatory'] },
+          { icon:'👕', name:'Moisture-Wicking UPF 50+ Long-Sleeve', spec:'Extreme UV requires full coverage — no exceptions. Moisture-wicking performance fabric is critical in hot conditions.', tags:['UPF 50+','Moisture-wicking','Long sleeve','Light colour only'] },
+          { icon:'👖', name:'Loose Linen UPF 50+ Full-Length Pants', spec:'Full coverage mandatory. Loose linen maximises airflow and keeps temperatures manageable.', tags:['UPF 50+','Full length','Loose linen','Light colour'] },
+          { icon:'🕶️', name:'Wraparound UV400 Sunglasses', spec:'Mandatory. At Extreme UV, eye damage can occur in minutes. Polarised wraparound frames required.', tags:['UV400','Wraparound mandatory','Polarised required'] },
+        ]
+      },
+    };
+
+    // ── 获取当前建议数据 ──
+    function getClothingData(uv, temp) {
+      const uvKey   = uv <= 2 ? 'low' : uv <= 5 ? 'moderate' : uv <= 7 ? 'high' : uv <= 10 ? 'veryhigh' : 'extreme';
+      const tempKey = getTempZone(temp);
+      return CLOTHING_DB[uvKey + '-' + tempKey];
+    }
+
+    // ── 渲染着装建议 ──
+    function renderClothing(uv, temp) {
+      const data   = getClothingData(uv, temp);
+      const uvConf = getUVConfig(uv);
+      const tempZone = getTempZone(temp);
+      const tempLabel = tempZone === 'cool' ? 'Cool' : tempZone === 'warm' ? 'Warm' : 'Hot';
+
+      // 更新 UV 标签
+      document.getElementById('clothing-uv-label').style.color = uvConf.color;
+      document.getElementById('clothing-uv-label').textContent = 'UV ' + uv;
+
+      // 更新温度标签
+      const tempColor = temp < 18 ? '#93C5FD' : temp <= 28 ? '#F97316' : '#EF4444';
+      document.getElementById('clothing-temp-label').style.color = tempColor;
+      document.getElementById('clothing-temp-label').textContent = temp + '°C';
+
+      // 更新 condition tags
+      document.getElementById('tag-uv').textContent = '☀️ UV ' + uv + ' · ' + uvConf.label;
+      document.getElementById('tag-uv').style.background = uvConf.bg;
+      document.getElementById('tag-uv').style.color = uvConf.color;
+      document.getElementById('tag-uv').style.border = '1px solid ' + uvConf.borderAlpha;
+
+      document.getElementById('tag-temp').textContent = '🌡 ' + temp + '°C · ' + tempLabel;
+
+      // 更新 sub 标题
+      document.getElementById('clothing-sub').textContent =
+        'Recommendations for UV ' + uv + ' (' + uvConf.label + ') and ' + temp + '°C. ' +
+        'Balancing maximum UV protection with thermal comfort.';
+
+      // 渲染 clothing items
+      const list = document.getElementById('clothing-list');
+      list.innerHTML = data.items.map(item => `
+        <div class="clothing-item">
+          <div class="clothing-icon">${item.icon}</div>
+          <div>
+            <div class="clothing-name">${item.name}</div>
+            <div class="clothing-spec">${item.spec}</div>
+            <div class="clothing-tags">
+              ${item.tags.map(t => `<span class="clothing-tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // 更新 summary
+      document.getElementById('clothing-summary').innerHTML =
+        '💡 <strong>Today\'s condition:</strong> ' + data.summary;
+    }
+
+    // ── 滑块拖动逻辑（UV & 温度通用）──
+    function makeDraggable(trackId, thumbId, minVal, maxVal, step, onUpdate) {
+      const track = document.getElementById(trackId);
+      const thumb = document.getElementById(thumbId);
+      let dragging = false;
+
+      function getVal(e) {
+        const rect = track.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        const raw = minVal + pct * (maxVal - minVal);
+        return Math.round(raw / step) * step;
+      }
+
+      function update(e) {
+        const val = getVal(e);
+        const pct = (val - minVal) / (maxVal - minVal) * 100;
+        thumb.style.left = pct + '%';
+        onUpdate(val);
+      }
+
+      track.addEventListener('mousedown',  e => { dragging = true; update(e); });
+      track.addEventListener('touchstart', e => { dragging = true; update(e); }, { passive: true });
+      document.addEventListener('mousemove',  e => { if (dragging) update(e); });
+      document.addEventListener('touchmove',  e => { if (dragging) update(e); }, { passive: true });
+      document.addEventListener('mouseup',   () => dragging = false);
+      document.addEventListener('touchend',  () => dragging = false);
+    }
+
+    // ── 初始化两个滑块 ──
+    makeDraggable('clothing-uv-track', 'clothing-uv-thumb', 0, 14, 1, val => {
+      clothingUV = val;
+      renderClothing(clothingUV, clothingTemp);
+    });
+
+    makeDraggable('clothing-temp-track', 'clothing-temp-thumb', 0, 40, 1, val => {
+      clothingTemp = val;
+      renderClothing(clothingUV, clothingTemp);
+    });
+
+    // ── 初始渲染 ──
+    renderClothing(clothingUV, clothingTemp);
+  </script>
+
 </body>
 
 </html>

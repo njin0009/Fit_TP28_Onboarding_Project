@@ -702,18 +702,18 @@
            不存储任何位置数据 -->
       <div class="location-bar">
         <div class="loc-dot"></div>
-        <span class="loc-city">Melbourne, VIC</span>
-        <span class="loc-auto">Auto-detected · −37.81°, 144.96°</span>
+        <span class="loc-city" id="loc-city">Melbourne, VIC</span>
+        <span class="loc-auto" id="loc-coords">Detecting location...</span>
       </div>
 
       <!-- 2. UV 大数字卡片
            US1.1 AC: 显示当前 UV 数值 + 颜色编码
            数据来源: UV Index API (OpenWeatherMap) -->
-      <div class="uv-main-card">
+      <div class="uv-main-card" id="uv-main-card">
         <div class="uv-label-sm">Current UV Index</div>
-        <div class="uv-big-number">9</div>
+        <div class="uv-big-number" id="uv-big-number">--</div>
         <!-- AC: UV 8-10 = Red = Very High Risk -->
-        <div class="uv-status-badge">⚠ Very High Risk</div>
+        <div class="uv-status-badge" id="uv-status-badge">Loading...</div>
       </div>
 
       <!-- 3. UV 颜色量表
@@ -722,10 +722,10 @@
       <div class="uv-scale-card">
         <div class="scale-header">
           <span style="color:var(--text-muted); font-size:11px; letter-spacing:2px; text-transform:uppercase">UV Scale</span>
-          <span class="scale-current-label">● 9 — Very High</span>
+          <span class="scale-current-label" id="scale-current-label">● -- — --</span>
         </div>
         <div class="scale-track">
-          <div class="scale-pointer"></div>
+          <div class="scale-pointer" id="scale-pointer"></div>
         </div>
         <div class="scale-nums">
           <span>0</span><span>3</span><span>5</span><span>7</span><span>10</span><span>11+</span>
@@ -738,39 +738,38 @@
       <div class="uv-legend">
         <div class="legend-title">UV Risk Levels</div>
 
-        <div class="legend-row">
+        <div class="legend-row" id="legend-low">
           <div class="legend-dot" style="background:#22C55E"></div>
           <div class="legend-range" style="color:#22C55E">1–2</div>
-          <div class="legend-name">Low Risk</div>
+          <div class="legend-name" id="legend-low-name">Low Risk</div>
           <div class="legend-desc">No protection needed</div>
         </div>
 
-        <div class="legend-row">
+        <div class="legend-row" id="legend-moderate">
           <div class="legend-dot" style="background:#EAB308"></div>
           <div class="legend-range" style="color:#EAB308">3–5</div>
-          <div class="legend-name">Moderate</div>
+          <div class="legend-name" id="legend-moderate-name">Moderate</div>
           <div class="legend-desc">Apply SPF 30+</div>
         </div>
 
-        <div class="legend-row">
+        <div class="legend-row" id="legend-high">
           <div class="legend-dot" style="background:#F97316"></div>
           <div class="legend-range" style="color:#F97316">6–7</div>
-          <div class="legend-name">High Risk</div>
+          <div class="legend-name" id="legend-high-name">High Risk</div>
           <div class="legend-desc">Seek shade midday</div>
         </div>
 
-        <!-- 当前等级高亮 — UV = 9 -->
-        <div class="legend-row active">
+        <div class="legend-row" id="legend-veryhigh">
           <div class="legend-dot" style="background:#EF4444"></div>
           <div class="legend-range" style="color:#EF4444">8–10</div>
-          <div class="legend-name" style="color:#EF4444">Very High ← now</div>
+          <div class="legend-name" id="legend-veryhigh-name">Very High</div>
           <div class="legend-desc">Immediate protection</div>
         </div>
 
-        <div class="legend-row">
+        <div class="legend-row" id="legend-extreme">
           <div class="legend-dot" style="background:#9333EA"></div>
           <div class="legend-range" style="color:#9333EA">11+</div>
-          <div class="legend-name">Extreme</div>
+          <div class="legend-name" id="legend-extreme-name">Extreme</div>
           <div class="legend-desc">Stay indoors if possible</div>
         </div>
       </div>
@@ -780,11 +779,11 @@
       <div class="meta-row">
         <div class="meta-chip">
           <div class="meta-chip-label">Temperature</div>
-          <div class="meta-chip-value" style="color:var(--uv-high)">28°C</div>
+          <div class="meta-chip-value" id="temp-value" style="color:var(--uv-high)">--°C</div>
         </div>
         <div class="meta-chip">
           <div class="meta-chip-label">Updated</div>
-          <div class="meta-chip-value" style="font-size:15px; color:var(--text-secondary)">2 min ago</div>
+          <div class="meta-chip-value" id="updated-time" style="font-size:15px; color:var(--text-secondary)">--</div>
         </div>
       </div>
 
@@ -800,30 +799,26 @@
            US1.1 描述核心功能: 不只是显示 UV=9，
            而是转化为"Your skin starts burning in 12 minutes"
            倒计时基于 UV 指数计算皮肤受损时间（Fitzpatrick 公式）-->
-      <div class="alert-card">
+      <div class="alert-card" id="alert-card">
         <div class="alert-tag-row">
           <div class="alert-icon">☀️</div>
-          <div class="alert-eyebrow">⚡ Immediate Action Required</div>
+          <div class="alert-eyebrow" id="alert-eyebrow">⚡ Fetching UV data...</div>
         </div>
 
-        <!-- Human Language 主标题 — 直接告诉用户剩余时间 -->
-        <div class="alert-headline">
-          Your skin starts burning<br>in 12 minutes
+        <div class="alert-headline" id="alert-headline">
+          Detecting UV level...
         </div>
 
-        <div class="alert-body">
-          Even on a cool Melbourne day, UV 9 causes rapid cellular DNA damage
-          that you cannot feel happening. This isn't a gradual process — at this
-          level, skin cell damage accumulates silently and permanently within minutes.
-          Act now, not when you feel it.
+        <div class="alert-body" id="alert-body">
+          Fetching your local UV data...
         </div>
 
         <!-- 倒计时芯片 — 将抽象的 UV 数字转为直观时间 -->
         <div class="burn-time-chip">
-          <div class="burn-minutes">12</div>
-          <div class="burn-label">
+          <div class="burn-minutes" id="burn-minutes">--</div>
+          <div class="burn-label" id="burn-label">
             minutes until <strong>skin cell damage begins</strong><br>
-            at UV 9 — unprotected fair skin (Fitzpatrick I–III)
+            <span id="burn-uv-desc">at current UV — unprotected fair skin (Fitzpatrick I–III)</span>
           </div>
         </div>
       </div>
@@ -868,15 +863,14 @@
       <!-- 4. 高危警告横幅
            US1.1 AC: "当 UV >= 8 时，显示高危警告"
            仅在 UV >= 8 时显示（当前 UV=9，显示） -->
-      <div class="high-risk-banner">
+      <div class="high-risk-banner" id="high-risk-banner" style="display:none">
         <div class="high-risk-icon">🚨</div>
         <div>
           <div class="high-risk-title">High-Risk Warning (UV ≥ 8)</div>
-          <div class="high-risk-body">
-            At UV 9, immediate protective action is essential — not optional.
+          <div class="high-risk-body" id="high-risk-body">
+            Immediate protective action is essential — not optional.
             Apply SPF 50+ <em>right now</em>, move into shade, and limit
-            time in direct sunlight. UV damage accumulates even through clouds
-            and cool temperatures.
+            time in direct sunlight.
           </div>
         </div>
       </div>
@@ -926,17 +920,248 @@
 
 
   <!-- ============================================================
-       US3.2 — 防晒提醒功能 JS
-       实现: 浏览器 Notification API
-       逻辑: 用户开启后，根据当前 UV 值计算提醒间隔，定时推送
-       不存储任何数据，页面关闭后提醒自动停止
+       US1.1 + US3.2 — UV Tracker 完整 JS
+       US1.1: 实时UV获取 → 更新所有显示元素
+       US3.2: Notification API 提醒
+       数据来源: OpenWeatherMap API (通过 Lambda)
+       后端未接入时: 使用 getMockUVData() 模拟数据
+       不存储任何用户数据
        ============================================================ -->
   <script>
-    // ── 当前 UV（后续接入 API 后替换此值）──
-    const CURRENT_UV = 9;
 
-    // ── 根据 UV 计算提醒间隔（分钟）──
-    // UV 1-5: 120分钟, UV 6-7: 90分钟, UV 8-10: 60分钟, UV 11+: 45分钟
+    // ╔══════════════════════════════════════════════════════════════
+    // ║  UV 等级配置表
+    // ╚══════════════════════════════════════════════════════════════
+    const UV_LEVELS = [
+      {
+        min:0, max:2, key:'low',
+        label:'Low', color:'#22C55E',
+        badgeBg:'rgba(34,197,94,0.1)', badgeBorder:'rgba(34,197,94,0.25)',
+        cardBorder:'#22C55E', cardShadow:'rgba(34,197,94,0.12)',
+        eyebrow:'✅ Low UV — Minimal Risk',
+        alertBody: uv => `UV ${uv} is low. You can enjoy outdoor activities with basic protection. Fair-skinned individuals should still consider SPF 30+.`,
+        scalePos: uv => (uv / 14) * 100,
+      },
+      {
+        min:3, max:5, key:'moderate',
+        label:'Moderate', color:'#EAB308',
+        badgeBg:'rgba(234,179,8,0.1)', badgeBorder:'rgba(234,179,8,0.25)',
+        cardBorder:'#EAB308', cardShadow:'rgba(234,179,8,0.12)',
+        eyebrow:'⚠️ Moderate UV — Protection Recommended',
+        alertBody: uv => `UV ${uv} is moderate. Apply SPF 30+ and wear a hat when outdoors for more than 30 minutes.`,
+        scalePos: uv => (uv / 14) * 100,
+      },
+      {
+        min:6, max:7, key:'high',
+        label:'High', color:'#F97316',
+        badgeBg:'rgba(249,115,22,0.1)', badgeBorder:'rgba(249,115,22,0.25)',
+        cardBorder:'#F97316', cardShadow:'rgba(249,115,22,0.12)',
+        eyebrow:'⚠️ High UV — Protection Required',
+        alertBody: uv => `UV ${uv} is high. Limit time in the sun, seek shade between 10am–3pm and wear SPF 50+.`,
+        scalePos: uv => (uv / 14) * 100,
+      },
+      {
+        min:8, max:10, key:'veryhigh',
+        label:'Very High', color:'#EF4444',
+        badgeBg:'rgba(239,68,68,0.1)', badgeBorder:'rgba(239,68,68,0.25)',
+        cardBorder:'#EF4444', cardShadow:'rgba(239,68,68,0.12)',
+        eyebrow:'⚡ Immediate Action Required',
+        alertBody: uv => `UV ${uv} causes rapid skin cell damage that you cannot feel. At this level, damage accumulates silently and permanently within minutes. Act now, not when you feel it.`,
+        scalePos: uv => (uv / 14) * 100,
+      },
+      {
+        min:11, max:99, key:'extreme',
+        label:'Extreme', color:'#9333EA',
+        badgeBg:'rgba(147,51,234,0.1)', badgeBorder:'rgba(147,51,234,0.25)',
+        cardBorder:'#9333EA', cardShadow:'rgba(147,51,234,0.12)',
+        eyebrow:'🚨 Extreme UV — Stay Indoors',
+        alertBody: uv => `UV ${uv} is extreme. Avoid all direct sun exposure. If you must go outdoors, maximum protection is essential every single minute.`,
+        scalePos: uv => Math.min((uv / 14) * 100, 97),
+      },
+    ];
+
+    function getUVLevel(uv) {
+      return UV_LEVELS.find(l => uv >= l.min && uv <= l.max) || UV_LEVELS[3];
+    }
+
+    // ╔══════════════════════════════════════════════════════════════
+    // ║  Burn Time 公式 (Fitzpatrick I–III, 最常见的澳洲肤色)
+    // ║  公式: burnTime(min) = 200 / (3 × UV)
+    // ║  UV 9 → 200/(27) ≈ 7 分钟
+    // ╚══════════════════════════════════════════════════════════════
+    function calcBurnTime(uv) {
+      if (uv <= 0) return null;
+      return Math.max(1, Math.round(200 / (3 * uv)));
+    }
+
+    // ╔══════════════════════════════════════════════════════════════
+    // ║  核心函数: updateUVDisplay(uv, temp, city, coords)
+    // ║  这个函数接收数据，更新页面上所有元素
+    // ║  后端接入后只需在这里传入真实数据即可
+    // ╚══════════════════════════════════════════════════════════════
+    function updateUVDisplay(uv, temp, city, coords) {
+      const level    = getUVLevel(uv);
+      const burnTime = calcBurnTime(uv);
+      const uvRound  = Math.round(uv * 10) / 10;
+
+      // ── 1. 位置栏 ──
+      document.getElementById('loc-city').textContent = city;
+      document.getElementById('loc-coords').textContent =
+        coords ? `Auto-detected · ${coords}` : 'Auto-detected';
+
+      // ── 2. UV 大数字卡片 ──
+      document.getElementById('uv-big-number').textContent = uvRound;
+      document.getElementById('uv-big-number').style.color = level.color;
+
+      const badge = document.getElementById('uv-status-badge');
+      badge.textContent = `⚠ ${level.label} Risk`;
+      badge.style.background  = level.badgeBg;
+      badge.style.border      = `1px solid ${level.badgeBorder}`;
+      badge.style.color       = level.color;
+
+      const card = document.getElementById('uv-main-card');
+      card.style.borderColor  = level.cardBorder;
+      card.style.boxShadow    = `0 8px 32px ${level.cardShadow}`;
+
+      // ── 3. 量表指针 ──
+      const pos = level.scalePos(uv);
+      document.getElementById('scale-pointer').style.left = pos + '%';
+      const scaleLabel = document.getElementById('scale-current-label');
+      scaleLabel.textContent = `● ${uvRound} — ${level.label}`;
+      scaleLabel.style.color = level.color;
+
+      // ── 4. Legend 高亮 — 只有当前等级加 active 类 ──
+      const legendIds = ['low','moderate','high','veryhigh','extreme'];
+      const legendColors = {
+        low:'#22C55E', moderate:'#EAB308', high:'#F97316',
+        veryhigh:'#EF4444', extreme:'#9333EA'
+      };
+      const legendLabels = {
+        low:'Low Risk', moderate:'Moderate',
+        high:'High Risk', veryhigh:'Very High', extreme:'Extreme'
+      };
+      legendIds.forEach(id => {
+        const row  = document.getElementById('legend-' + id);
+        const name = document.getElementById('legend-' + id + '-name');
+        if (!row) return;
+        const isActive = id === level.key;
+        row.className = 'legend-row' + (isActive ? ' active' : '');
+        if (isActive) {
+          row.style.background = level.badgeBg;
+          row.style.border     = `1px solid ${level.badgeBorder}`;
+          name.textContent     = level.label + ' ← now';
+          name.style.color     = level.color;
+        } else {
+          row.style.background = '';
+          row.style.border     = '';
+          name.textContent     = legendLabels[id];
+          name.style.color     = '';
+        }
+      });
+
+      // ── 5. 温度 + 更新时间 ──
+      const tempEl = document.getElementById('temp-value');
+      tempEl.textContent   = temp + '°C';
+      tempEl.style.color   = temp < 18 ? '#93C5FD' : temp <= 28 ? '#F97316' : '#EF4444';
+      document.getElementById('updated-time').textContent = 'Just now';
+
+      // ── 6. Human Language Alert ──
+      const alertCard = document.getElementById('alert-card');
+      alertCard.style.borderColor = level.cardBorder;
+      alertCard.style.boxShadow   = `0 4px 24px ${level.cardShadow}`;
+
+      // 顶部色条也更新
+      alertCard.style.setProperty('--alert-top-color', level.color);
+
+      document.getElementById('alert-eyebrow').textContent = level.eyebrow;
+      document.getElementById('alert-eyebrow').style.color = level.color;
+
+      if (burnTime) {
+        document.getElementById('alert-headline').innerHTML =
+          `Your skin starts burning<br>in <span style="color:${level.color}">${burnTime} minutes</span>`;
+        document.getElementById('burn-minutes').textContent = burnTime;
+        document.getElementById('burn-minutes').style.color = level.color;
+        document.getElementById('burn-uv-desc').textContent =
+          `at UV ${uvRound} — unprotected fair skin (Fitzpatrick I–III)`;
+      } else {
+        document.getElementById('alert-headline').innerHTML = 'UV level is safe';
+        document.getElementById('burn-minutes').textContent = '∞';
+        document.getElementById('burn-minutes').style.color = level.color;
+      }
+
+      document.getElementById('alert-body').textContent = level.alertBody(uvRound);
+
+      // ── 7. High-Risk Banner (UV >= 8 才显示) ──
+      const banner = document.getElementById('high-risk-banner');
+      if (uv >= 8) {
+        banner.style.display = 'flex';
+        document.getElementById('high-risk-body').innerHTML =
+          `At UV ${uvRound}, immediate protective action is essential — not optional.
+          Apply SPF 50+ <em>right now</em>, move into shade, and limit
+          time in direct sunlight. UV damage accumulates even through clouds
+          and cool temperatures.`;
+      } else {
+        banner.style.display = 'none';
+      }
+
+      // ── 8. 更新 US3.2 提醒用的 UV 值 ──
+      currentUVForReminder = uv;
+    }
+
+    // ╔══════════════════════════════════════════════════════════════
+    // ║  数据获取层
+    // ║  Step A (现在): getMockUVData() — 模拟数据，测试联动
+    // ║  Step B (后端接入后): fetchUVFromLambda() — 真实 API
+    // ╚══════════════════════════════════════════════════════════════
+
+    // ── 真实 Lambda API ──
+    const API_URL = 'https://8z3t7mbia4.execute-api.us-east-1.amazonaws.com/prod/uv';
+
+    async function fetchUVFromLambda(lat, lon) {
+      const res  = await fetch(`${API_URL}?lat=${lat}&lon=${lon}`);
+      const data = await res.json();
+      return {
+        uv:     data.uv   ?? 0,
+        temp:   data.temp ?? '--',
+        city:   'Melbourne, VIC',
+        coords: `${parseFloat(lat).toFixed(2)}°, ${parseFloat(lon).toFixed(2)}°`
+      };
+    }
+
+    // ── 主入口: 获取位置 → 获取UV → 更新页面 ──
+    async function initUVTracker() {
+      document.getElementById('loc-city').textContent      = 'Detecting...';
+      document.getElementById('uv-big-number').textContent = '--';
+
+      try {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const { latitude: lat, longitude: lon } = pos.coords;
+            const data = await fetchUVFromLambda(lat, lon);
+            updateUVDisplay(data.uv, data.temp, data.city, data.coords);
+          },
+          async () => {
+            // 定位失败 → 用 Melbourne 默认坐标
+            const data = await fetchUVFromLambda(-37.81, 144.96);
+            updateUVDisplay(data.uv, data.temp, 'Melbourne, VIC', '−37.81°, 144.96°');
+          }
+        );
+      } catch(e) {
+        console.error('UV fetch failed:', e);
+      }
+    }
+
+    // 页面加载时自动运行
+    initUVTracker();
+
+    // 每 10 分钟自动刷新
+    setInterval(initUVTracker, 10 * 60 * 1000);
+
+    // ╔══════════════════════════════════════════════════════════════
+    // ║  US3.2 — 防晒提醒功能
+    // ╚══════════════════════════════════════════════════════════════
+    let currentUVForReminder = 9;
+
     function getReminderInterval(uv) {
       if (uv <= 2)  return 120;
       if (uv <= 5)  return 90;
@@ -945,7 +1170,6 @@
       return 45;
     }
 
-    // ── 格式化时间显示 ──
     function formatTime(date) {
       return date.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: true });
     }
@@ -957,123 +1181,84 @@
       return h > 0 ? `${h}h ${m}m` : `${m}m`;
     }
 
-    // ── 提醒状态 ──
-    let reminderOn       = false;
-    let reminderTimer    = null;  // setInterval 计时器
-    let countdownTimer   = null;  // 倒计时更新计时器
-    let nextReminderTime = null;  // 下次提醒的 Date 对象
+    let reminderOn = false, reminderTimer = null, countdownTimer = null, nextReminderTime = null;
 
-    // ── Toggle 开关样式更新 ──
     function setToggleUI(on) {
       const toggle = document.getElementById('reminder-toggle');
       const knob   = document.getElementById('toggle-knob');
       const navBtn = document.getElementById('nav-reminder-btn');
-
       if (on) {
         toggle.style.background = 'var(--brand-primary)';
-        knob.style.right = '3px';
-        knob.style.left  = 'auto';
+        knob.style.right = '3px'; knob.style.left = 'auto';
         navBtn.textContent = 'Reminders ON 🔔';
         navBtn.style.background = '#22C55E';
       } else {
         toggle.style.background = '#D1D5DB';
-        knob.style.left  = '3px';
-        knob.style.right = 'auto';
+        knob.style.left = '3px'; knob.style.right = 'auto';
         navBtn.textContent = 'Enable Reminders 🔔';
         navBtn.style.background = 'var(--brand-primary)';
       }
     }
 
-    // ── 发送浏览器通知 ──
     function sendNotification() {
       if (Notification.permission === 'granted') {
         new Notification('☀️ GlowCheck — Time to Reapply!', {
-          body: `UV ${CURRENT_UV} today. Reapply SPF 50+ sunscreen now to stay protected.`,
-          icon: 'favicon.png',
-          badge: 'favicon.png',
+          body: `UV ${currentUVForReminder} today. Reapply SPF 50+ sunscreen now to stay protected.`,
         });
       }
-      // 更新下次提醒时间
       scheduleNext();
     }
 
-    // ── 安排下次提醒 ──
     function scheduleNext() {
-      const intervalMs = getReminderInterval(CURRENT_UV) * 60 * 1000;
+      const intervalMs = getReminderInterval(currentUVForReminder) * 60 * 1000;
       nextReminderTime = new Date(Date.now() + intervalMs);
-
-      // 更新倒计时显示
       updateCountdown();
-
-      // 清除旧定时器
       if (reminderTimer)  clearTimeout(reminderTimer);
       if (countdownTimer) clearInterval(countdownTimer);
-
-      // 设置下次提醒
-      reminderTimer = setTimeout(sendNotification, intervalMs);
-
-      // 每分钟更新倒计时显示
+      reminderTimer  = setTimeout(sendNotification, intervalMs);
       countdownTimer = setInterval(updateCountdown, 30000);
     }
 
-    // ── 更新倒计时文字 ──
     function updateCountdown() {
       if (!nextReminderTime) return;
       const remaining = nextReminderTime - Date.now();
       if (remaining <= 0) return;
-
       const el1 = document.getElementById('reminder-countdown');
       const el2 = document.getElementById('reminder-time');
       const el3 = document.getElementById('reminder-status');
-
       if (el1) el1.textContent = formatCountdown(remaining);
       if (el2) el2.textContent = formatTime(nextReminderTime);
-      if (el3) el3.textContent = `Based on UV ${CURRENT_UV} — interval: ${getReminderInterval(CURRENT_UV)} min`;
+      if (el3) el3.textContent = `Based on UV ${currentUVForReminder} — interval: ${getReminderInterval(currentUVForReminder)} min`;
     }
 
-    // ── 主开关函数 ──
     async function toggleReminder() {
       if (reminderOn) {
-        // 关闭提醒
         reminderOn = false;
         if (reminderTimer)  clearTimeout(reminderTimer);
         if (countdownTimer) clearInterval(countdownTimer);
         nextReminderTime = null;
         setToggleUI(false);
-
         const el1 = document.getElementById('reminder-countdown');
         const el3 = document.getElementById('reminder-status');
         if (el1) el1.textContent = '--';
         if (el3) el3.textContent = 'Reminders disabled.';
         return;
       }
-
-      // 请求通知权限
       if (Notification.permission === 'default') {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-          alert('Please allow notifications in your browser to enable reminders.');
-          return;
-        }
+        const p = await Notification.requestPermission();
+        if (p !== 'granted') { alert('Please allow notifications in your browser.'); return; }
       }
-
       if (Notification.permission === 'denied') {
-        alert('Notifications are blocked. Please enable them in your browser settings.');
-        return;
+        alert('Notifications are blocked. Please enable them in browser settings.'); return;
       }
-
-      // 开启提醒
       reminderOn = true;
       setToggleUI(true);
       scheduleNext();
-
-      // 立即发一条确认通知
       new Notification('✅ GlowCheck Reminders Active', {
-        body: `You'll be reminded to reapply every ${getReminderInterval(CURRENT_UV)} minutes based on UV ${CURRENT_UV}.`,
+        body: `You'll be reminded to reapply every ${getReminderInterval(currentUVForReminder)} minutes based on UV ${currentUVForReminder}.`,
       });
     }
 
-    // ── 初始化 Toggle 样式 ──
     setToggleUI(false);
   </script>
 
