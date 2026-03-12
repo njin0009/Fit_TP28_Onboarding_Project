@@ -671,7 +671,7 @@
       <a href="page3-awareness.html"       class="nav-link">Awareness</a>
       <a href="page4-protection-tools.html" class="nav-link">Protection Tools</a>
     </div>
-    <button class="btn-nav">Enable Reminders 🔔</button>
+    <button class="btn-nav" id="nav-reminder-btn" onclick="toggleReminder()">Enable Reminders 🔔</button>
   </nav>
 
 
@@ -892,14 +892,14 @@
             <span style="font-size:11px; font-weight:500; color:var(--text-muted)">(US3.2)</span>
           </div>
           <!-- Toggle 开关: ON 状态 -->
-          <div class="toggle"><div class="toggle-knob"></div></div>
+          <div class="toggle" id="reminder-toggle" onclick="toggleReminder()"><div class="toggle-knob" id="toggle-knob"></div></div>
         </div>
 
         <!-- 下次提醒时间 — 基于 UV 9 计算为每 1.5 小时 -->
         <div class="reminder-info">
-          Next reminder in <strong>1h 47m</strong> — Reapply SPF 50+ at
-          <strong>2:30 PM</strong> based on current UV 9 and 28°C temperature.
-          Interval calculated from UV severity + temperature exposure.
+          Next reminder in <strong id="reminder-countdown">--</strong> — Reapply SPF 50+ at
+          <strong id="reminder-time">--:--</strong>.
+          <span id="reminder-status">Enable reminders to activate.</span>
         </div>
 
         <!-- 隐私声明 — 明确不存储数据 -->
@@ -923,6 +923,159 @@
     <span>Data: OpenWeatherMap UV API · Location CSV · ABS Sun Behaviours</span>
     <span class="privacy-badge">🔒 No user data stored</span>
   </footer>
+
+
+  <!-- ============================================================
+       US3.2 — 防晒提醒功能 JS
+       实现: 浏览器 Notification API
+       逻辑: 用户开启后，根据当前 UV 值计算提醒间隔，定时推送
+       不存储任何数据，页面关闭后提醒自动停止
+       ============================================================ -->
+  <script>
+    // ── 当前 UV（后续接入 API 后替换此值）──
+    const CURRENT_UV = 9;
+
+    // ── 根据 UV 计算提醒间隔（分钟）──
+    // UV 1-5: 120分钟, UV 6-7: 90分钟, UV 8-10: 60分钟, UV 11+: 45分钟
+    function getReminderInterval(uv) {
+      if (uv <= 2)  return 120;
+      if (uv <= 5)  return 90;
+      if (uv <= 7)  return 75;
+      if (uv <= 10) return 60;
+      return 45;
+    }
+
+    // ── 格式化时间显示 ──
+    function formatTime(date) {
+      return date.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    function formatCountdown(ms) {
+      const totalMin = Math.floor(ms / 60000);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    }
+
+    // ── 提醒状态 ──
+    let reminderOn       = false;
+    let reminderTimer    = null;  // setInterval 计时器
+    let countdownTimer   = null;  // 倒计时更新计时器
+    let nextReminderTime = null;  // 下次提醒的 Date 对象
+
+    // ── Toggle 开关样式更新 ──
+    function setToggleUI(on) {
+      const toggle = document.getElementById('reminder-toggle');
+      const knob   = document.getElementById('toggle-knob');
+      const navBtn = document.getElementById('nav-reminder-btn');
+
+      if (on) {
+        toggle.style.background = 'var(--brand-primary)';
+        knob.style.right = '3px';
+        knob.style.left  = 'auto';
+        navBtn.textContent = 'Reminders ON 🔔';
+        navBtn.style.background = '#22C55E';
+      } else {
+        toggle.style.background = '#D1D5DB';
+        knob.style.left  = '3px';
+        knob.style.right = 'auto';
+        navBtn.textContent = 'Enable Reminders 🔔';
+        navBtn.style.background = 'var(--brand-primary)';
+      }
+    }
+
+    // ── 发送浏览器通知 ──
+    function sendNotification() {
+      if (Notification.permission === 'granted') {
+        new Notification('☀️ GlowCheck — Time to Reapply!', {
+          body: `UV ${CURRENT_UV} today. Reapply SPF 50+ sunscreen now to stay protected.`,
+          icon: 'favicon.png',
+          badge: 'favicon.png',
+        });
+      }
+      // 更新下次提醒时间
+      scheduleNext();
+    }
+
+    // ── 安排下次提醒 ──
+    function scheduleNext() {
+      const intervalMs = getReminderInterval(CURRENT_UV) * 60 * 1000;
+      nextReminderTime = new Date(Date.now() + intervalMs);
+
+      // 更新倒计时显示
+      updateCountdown();
+
+      // 清除旧定时器
+      if (reminderTimer)  clearTimeout(reminderTimer);
+      if (countdownTimer) clearInterval(countdownTimer);
+
+      // 设置下次提醒
+      reminderTimer = setTimeout(sendNotification, intervalMs);
+
+      // 每分钟更新倒计时显示
+      countdownTimer = setInterval(updateCountdown, 30000);
+    }
+
+    // ── 更新倒计时文字 ──
+    function updateCountdown() {
+      if (!nextReminderTime) return;
+      const remaining = nextReminderTime - Date.now();
+      if (remaining <= 0) return;
+
+      const el1 = document.getElementById('reminder-countdown');
+      const el2 = document.getElementById('reminder-time');
+      const el3 = document.getElementById('reminder-status');
+
+      if (el1) el1.textContent = formatCountdown(remaining);
+      if (el2) el2.textContent = formatTime(nextReminderTime);
+      if (el3) el3.textContent = `Based on UV ${CURRENT_UV} — interval: ${getReminderInterval(CURRENT_UV)} min`;
+    }
+
+    // ── 主开关函数 ──
+    async function toggleReminder() {
+      if (reminderOn) {
+        // 关闭提醒
+        reminderOn = false;
+        if (reminderTimer)  clearTimeout(reminderTimer);
+        if (countdownTimer) clearInterval(countdownTimer);
+        nextReminderTime = null;
+        setToggleUI(false);
+
+        const el1 = document.getElementById('reminder-countdown');
+        const el3 = document.getElementById('reminder-status');
+        if (el1) el1.textContent = '--';
+        if (el3) el3.textContent = 'Reminders disabled.';
+        return;
+      }
+
+      // 请求通知权限
+      if (Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          alert('Please allow notifications in your browser to enable reminders.');
+          return;
+        }
+      }
+
+      if (Notification.permission === 'denied') {
+        alert('Notifications are blocked. Please enable them in your browser settings.');
+        return;
+      }
+
+      // 开启提醒
+      reminderOn = true;
+      setToggleUI(true);
+      scheduleNext();
+
+      // 立即发一条确认通知
+      new Notification('✅ GlowCheck Reminders Active', {
+        body: `You'll be reminded to reapply every ${getReminderInterval(CURRENT_UV)} minutes based on UV ${CURRENT_UV}.`,
+      });
+    }
+
+    // ── 初始化 Toggle 样式 ──
+    setToggleUI(false);
+  </script>
 
 </body>
 </html>

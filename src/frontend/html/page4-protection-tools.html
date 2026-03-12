@@ -689,17 +689,18 @@
 
       <!-- GPS 模式: 显示滑块（反映实时 UV = 9）
            Figma 注: active 状态显示此区域 -->
+      <div id="auto-uv-section">
       <div class="uv-slider-section">
         <div class="slider-label-row">
           <div class="slider-label">Current UV Index — Melbourne, VIC</div>
           <!-- 当前值以大字显示 -->
-          <div class="slider-current-val">UV 9</div>
+          <div class="slider-current-val" id="uv-display">UV 9</div>
         </div>
 
         <!-- 渐变色轨道 + 拖柄
              Figma: range input, 拖动时实时更新结果 -->
-        <div class="slider-track-wrap">
-          <div class="slider-thumb"></div>
+        <div class="slider-track-wrap" id="slider-track">
+          <div class="slider-thumb" id="slider-thumb"></div>
         </div>
 
         <div class="slider-range-labels">
@@ -710,40 +711,41 @@
         </div>
       </div>
 
-      <!-- 手动输入模式（Figma 中作为隐藏状态）
-           US3.1 AC: "当系统无法获取地理坐标时，用户输入 UV 值" -->
-      <!-- <div class="manual-input-group">
-        <input class="uv-input" type="number" placeholder="Enter UV index (e.g. 9)" min="0" max="20">
-        <button class="btn-calculate">Calculate →</button>
-      </div> -->
+      </div><!-- /auto-uv-section -->
 
-      <!-- 用量结果 — 三栏展示不同身体部位
-           US3.1 AC: "系统显示以茶匙或泵次为单位的结果"
-           计算公式: 基于 WHO 推荐的每cm² 2mg 防晒霜 -->
+      <!-- 手动输入模式 -->
+      <div id="manual-uv-section" style="display:none">
+        <div class="manual-input-group">
+          <input class="uv-input" id="manual-uv-input" type="number" placeholder="Enter UV index (e.g. 9)" min="0" max="20">
+          <button class="btn-calculate" id="btn-calculate">Calculate →</button>
+        </div>
+      </div>
+
+      <!-- 用量结果卡片 — JS 动态更新 id 对应元素 -->
       <div class="dosage-results">
 
         <!-- 面部 + 颈部用量 -->
         <div class="dosage-card">
           <div class="dosage-emoji">😊</div>
-          <div class="dosage-number" style="color: var(--brand-primary)">0.5</div>
+          <div class="dosage-number" id="dose-face">0.5</div>
           <div class="dosage-unit">Teaspoons</div>
-          <div class="dosage-body-part">Face & Neck<br>approx. 2 pumps</div>
+          <div class="dosage-body-part">Face &amp; Neck<br><span id="pumps-face">2 pumps</span></div>
         </div>
 
         <!-- 手臂用量 -->
         <div class="dosage-card">
           <div class="dosage-emoji">💪</div>
-          <div class="dosage-number" style="color: var(--uv-high)">1.0</div>
+          <div class="dosage-number" id="dose-arms">1.0</div>
           <div class="dosage-unit">Teaspoons</div>
-          <div class="dosage-body-part">Arms & Shoulders<br>approx. 4 pumps</div>
+          <div class="dosage-body-part">Arms &amp; Shoulders<br><span id="pumps-arms">4 pumps</span></div>
         </div>
 
         <!-- 身体 + 腿部用量 -->
         <div class="dosage-card">
           <div class="dosage-emoji">🦵</div>
-          <div class="dosage-number" style="color: var(--uv-veryhigh)">2.0</div>
+          <div class="dosage-number" id="dose-body">2.0</div>
           <div class="dosage-unit">Teaspoons</div>
-          <div class="dosage-body-part">Body & Legs<br>approx. 8 pumps</div>
+          <div class="dosage-body-part">Body &amp; Legs<br><span id="pumps-body">8 pumps</span></div>
         </div>
 
       </div>
@@ -753,6 +755,8 @@
         <div class="guide-title">📋 Application Guide — UV 9</div>
         <ul class="guide-list">
           <li>Apply <strong>20 minutes before</strong> going outdoors — sunscreen needs time to bind to skin</li>
+          <li>Use <strong id="guide-spf">SPF 50+</strong> at this UV level</li>
+          <li>Reapply every <strong id="guide-reapply">1.5 hours</strong> — reduced at very high UV</li>
           <li>Reapply every <strong>1.5 hours</strong> at UV 9 (standard is 2hrs, reduced at very high UV)</li>
           <li>Reapply <strong>immediately</strong> after swimming, sweating, or towel drying regardless of timing</li>
           <li>Use <strong>SPF 50+</strong> at UV 9 — SPF 30 is insufficient at this level</li>
@@ -893,5 +897,111 @@
     <span class="privacy-badge">🔒 No user data stored</span>
   </footer>
 
+    <!-- ============================================================
+      US3.1 防晒计算器 JS
+      逻辑: UV 滑块值 → 计算各部位用量（茶匙/泵次）
+      公式: WHO 推荐 2mg/cm²，按 UV 等级调整系数
+      不涉及任何用户数据存储
+      ============================================================ -->
+  <script>
+    // ── UV 等级对应的颜色和文字 ──
+    const UV_LEVELS = [
+      { max: 2,  label: 'Low',       color: '#22C55E', bg: '#F0FDF4' },
+      { max: 5,  label: 'Moderate',  color: '#EAB308', bg: '#FEFCE8' },
+      { max: 7,  label: 'High',      color: '#F97316', bg: '#FFF7ED' },
+      { max: 10, label: 'Very High', color: '#EF4444', bg: '#FEF2F2' },
+      { max: 99, label: 'Extreme',   color: '#9333EA', bg: '#FAF5FF' },
+    ];
+
+    function getUVLevel(uv) {
+      return UV_LEVELS.find(l => uv <= l.max);
+    }
+
+    // ── 核心计算函数 ──
+    // 基础用量（茶匙）× UV 系数
+    // UV 1-5: 正常量, UV 6-7: +25%, UV 8-10: +50%, UV 11+: +75%
+    function calcDosage(uv) {
+      const multiplier = uv <= 5 ? 1 : uv <= 7 ? 1.25 : uv <= 10 ? 1.5 : 1.75;
+      return {
+        face:  +(0.5  * multiplier).toFixed(1),  // 面部+颈部 基础 0.5 茶匙
+        arms:  +(1.0  * multiplier).toFixed(1),  // 手臂+肩膀 基础 1.0 茶匙
+        body:  +(2.0  * multiplier).toFixed(1),  // 身体+腿部 基础 2.0 茶匙
+      };
+    }
+
+    // 茶匙 → 泵次换算（1 茶匙 ≈ 4 泵）
+    function tspToPumps(tsp) { return Math.round(tsp * 4); }
+
+    // ── 更新页面显示 ──
+    function updateCalculator(uv) {
+      const level = getUVLevel(uv);
+      const dose  = calcDosage(uv);
+
+      // 更新 UV 大数字显示
+      document.getElementById('uv-display').textContent = 'UV ' + uv;
+      document.getElementById('uv-display').style.color = level.color;
+
+      // 更新滑块指针位置（UV 0-14 范围）
+      const pct = Math.min(uv / 14 * 100, 100);
+      document.getElementById('slider-thumb').style.left = pct + '%';
+
+      // 更新三个用量卡片
+      document.getElementById('dose-face').textContent  = dose.face;
+      document.getElementById('dose-arms').textContent  = dose.arms;
+      document.getElementById('dose-body').textContent  = dose.body;
+      document.getElementById('pumps-face').textContent = tspToPumps(dose.face) + ' pumps';
+      document.getElementById('pumps-arms').textContent = tspToPumps(dose.arms) + ' pumps';
+      document.getElementById('pumps-body').textContent = tspToPumps(dose.body) + ' pumps';
+
+      // 更新用量卡片颜色
+      ['dose-face','dose-arms','dose-body'].forEach(id => {
+        document.getElementById(id).style.color = level.color;
+      });
+
+      // 更新 SPF 建议文字
+      const spf = uv <= 5 ? 'SPF 30+' : uv <= 7 ? 'SPF 50+' : 'SPF 50+';
+      const reapply = uv <= 5 ? '2 hours' : uv <= 7 ? '2 hours' : '1.5 hours';
+      document.getElementById('guide-spf').textContent    = spf;
+      document.getElementById('guide-reapply').textContent = reapply;
+    }
+
+    // ── 滑块拖动事件 ──
+    const track = document.getElementById('slider-track');
+    let isDragging = false;
+
+    function getUVFromClick(e) {
+      const rect = track.getBoundingClientRect();
+      const x = (e.clientX || e.touches[0].clientX) - rect.left;
+      const pct = Math.max(0, Math.min(1, x / rect.width));
+      return Math.round(pct * 14);  // UV 范围 0-14
+    }
+
+    track.addEventListener('mousedown',  e => { isDragging = true; updateCalculator(getUVFromClick(e)); });
+    track.addEventListener('touchstart', e => { isDragging = true; updateCalculator(getUVFromClick(e)); });
+    document.addEventListener('mousemove',  e => { if (isDragging) updateCalculator(getUVFromClick(e)); });
+    document.addEventListener('touchmove',  e => { if (isDragging) updateCalculator(getUVFromClick(e)); });
+    document.addEventListener('mouseup',   () => isDragging = false);
+    document.addEventListener('touchend',  () => isDragging = false);
+
+    // ── 手动输入模式 ──
+    document.getElementById('btn-calculate').addEventListener('click', () => {
+      const val = parseInt(document.getElementById('manual-uv-input').value);
+      if (val >= 0 && val <= 20) updateCalculator(val);
+    });
+
+    // ── Tab 切换 ──
+    document.querySelectorAll('.input-tab').forEach((tab, i) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('auto-uv-section').style.display  = i === 0 ? 'block' : 'none';
+        document.getElementById('manual-uv-section').style.display = i === 1 ? 'block' : 'none';
+      });
+    });
+
+    // 初始化显示 UV 9
+    updateCalculator(9);
+  </script>
 </body>
+
 </html>

@@ -744,33 +744,30 @@
         <div class="skin-result">
           <div class="skin-result-header">
             <!-- 选中色调预览 — MST 7 -->
-            <div class="selected-tone-preview" style="background:#825C43"></div>
+            <div class="selected-tone-preview" id="tone-preview" style="background:#825C43"></div>
             <div>
-              <div class="skin-result-name">MST 7 — Dark Medium</div>
-              <div class="skin-result-mst">Fitzpatrick Type IV–V · Moderate melanin protection</div>
+              <div class="skin-result-name" id="tone-name">MST 7 — Dark Medium</div>
+              <div class="skin-result-mst" id="tone-fitzpatrick">Fitzpatrick Type IV–V · Moderate melanin protection</div>
             </div>
           </div>
 
           <!-- UV 风险等级条 — 视觉化风险位置 -->
           <div class="skin-risk-bar">
-            <div class="skin-risk-fill"></div>
+            <div class="skin-risk-fill" id="tone-risk-fill"></div>
           </div>
 
-          <div class="skin-advice-title">Your UV Risk Profile at UV 9</div>
-          <div class="skin-advice-body">
+          <div class="skin-advice-title" id="tone-advice-title">Your UV Risk Profile at UV 9</div>
+          <div class="skin-advice-body" id="tone-advice-body">
             Melanin provides some natural UV protection, but does <strong>not</strong>
             prevent DNA damage. At UV 9, even dark skin tones sustain cellular
-            damage within 20–30 minutes unprotected. Darker tones often
-            underestimate their risk — and skin cancer in darker skin is
-            typically detected later, leading to worse outcomes.
+            damage within 20–30 minutes unprotected.
           </div>
 
-          <!-- 个性化建议要点 -->
-          <ul class="advice-list">
+          <ul class="advice-list" id="tone-advice-list">
             <li>Apply SPF 30–50+ daily, even on overcast days</li>
-            <li>Reapply every 2 hours — melanin does not block UV reapplication need</li>
+            <li>Reapply every 2 hours</li>
             <li>Check your skin monthly for new or changing spots</li>
-            <li>Seek shade between 10am–3pm regardless of skin tone</li>
+            <li>Seek shade between 10am–3pm</li>
           </ul>
         </div>
       </div>
@@ -787,6 +784,237 @@
     <span>Data: AIHW Cancer CSV · data.gov.au UV CSV · Google Monk Skin Tone Scale</span>
     <span class="privacy-badge">🔒 No user data stored</span>
   </footer>
+
+
+  <!-- ============================================================
+       US2.2 — 皮肤色调 UV 工具 JS
+       实现: 点击 MST 色板 → 动态更新右侧建议内容
+       数据: 10 个 MST 色调的完整建议数据内嵌在此
+       不存储任何数据，仅在当前会话中使用
+       ============================================================ -->
+  <script>
+    // ── MST 10 个色调的完整数据 ──
+    // 每个色调包含: 名称、Fitzpatrick 类型、风险等级(0-100)、建议文字、建议列表
+    const MST_DATA = [
+      {
+        id: 1,
+        hex: '#F6EDE4',
+        name: 'MST 1 — Very Light',
+        fitzpatrick: 'Fitzpatrick Type I · Minimal melanin · Highest UV sensitivity',
+        riskPct: 95,
+        burnTime: '7–10 minutes',
+        spf: 'SPF 50+',
+        body: 'Very light skin has minimal melanin protection. At UV 9, skin cell damage begins within 7–10 minutes unprotected. You are at the highest risk group for UV-induced DNA damage and melanoma.',
+        advice: [
+          'Apply SPF 50+ every morning — non-negotiable at any UV level',
+          'Reapply every 60–90 minutes outdoors',
+          'Seek shade strictly between 10am–3pm',
+          'Wear UPF 50+ clothing and broad-brim hat daily',
+          'Check skin monthly — fair skin shows changes more visibly',
+        ]
+      },
+      {
+        id: 2,
+        hex: '#F3E7DB',
+        name: 'MST 2 — Light',
+        fitzpatrick: 'Fitzpatrick Type I–II · Very low melanin · Very high UV sensitivity',
+        riskPct: 88,
+        burnTime: '10–15 minutes',
+        spf: 'SPF 50+',
+        body: 'Light skin tones burn quickly and have very limited natural UV protection. At UV 9, unprotected exposure causes damage within 10–15 minutes. Consistent daily protection is essential.',
+        advice: [
+          'SPF 50+ every day, reapply every 90 minutes',
+          'Avoid direct sun 10am–3pm when UV peaks',
+          'Wear sunglasses with UV400 rating',
+          'Check for new moles or changes monthly',
+          'Tanning = DNA damage, not health',
+        ]
+      },
+      {
+        id: 3,
+        hex: '#F7EAD0',
+        name: 'MST 3 — Light Medium',
+        fitzpatrick: 'Fitzpatrick Type II · Low melanin · High UV sensitivity',
+        riskPct: 78,
+        burnTime: '15–20 minutes',
+        spf: 'SPF 50+',
+        body: 'Light medium skin has slightly more melanin than lighter tones, but remains highly vulnerable to UV damage. Burning still occurs within 15–20 minutes at UV 9 without protection.',
+        advice: [
+          'SPF 50+ required — do not reduce to SPF 30 at high UV',
+          'Reapply every 2 hours and after swimming',
+          'Broad-brim hat and UPF clothing recommended',
+          'UV damage is cumulative — protect even on cloudy days',
+          'Annual skin check with a GP or dermatologist',
+        ]
+      },
+      {
+        id: 4,
+        hex: '#EADABA',
+        name: 'MST 4 — Medium Light',
+        fitzpatrick: 'Fitzpatrick Type II–III · Moderate-low melanin',
+        riskPct: 68,
+        burnTime: '20–25 minutes',
+        spf: 'SPF 50+',
+        body: 'Medium light skin tones have moderate melanin. While you may tan before burning, UV radiation still causes DNA damage regardless of whether you see a sunburn. Protection is still essential.',
+        advice: [
+          'SPF 30–50+ daily — higher UV days require SPF 50+',
+          'Reapply every 2 hours outdoors',
+          'Tanning does not mean you are protected',
+          'Seek shade during peak UV hours',
+          'Wear UV400 sunglasses to protect eyes',
+        ]
+      },
+      {
+        id: 5,
+        hex: '#D7BD96',
+        name: 'MST 5 — Medium',
+        fitzpatrick: 'Fitzpatrick Type III · Moderate melanin',
+        riskPct: 55,
+        burnTime: '25–35 minutes',
+        spf: 'SPF 30–50+',
+        body: 'Medium skin tones have meaningful melanin protection, but this does not prevent UV DNA damage — it only slows it. At UV 9, skin damage accumulates within 25–35 minutes unprotected.',
+        advice: [
+          'SPF 30+ minimum, SPF 50+ at UV 8+ levels',
+          'Reapply every 2 hours',
+          'Melanin is NOT a substitute for sunscreen',
+          'Seek shade 10am–3pm on high UV days',
+          'Monitor skin for changes — darker tones often detect cancer later',
+        ]
+      },
+      {
+        id: 6,
+        hex: '#A07850',
+        name: 'MST 6 — Medium Dark',
+        fitzpatrick: 'Fitzpatrick Type III–IV · Moderate-high melanin',
+        riskPct: 45,
+        burnTime: '35–45 minutes',
+        spf: 'SPF 30–50+',
+        body: 'Medium dark skin has higher melanin levels providing more natural protection. However, UV radiation still causes cellular DNA damage. Skin cancers in darker tones are often diagnosed at later stages.',
+        advice: [
+          'Apply SPF 30–50+ daily — UV damage is still happening',
+          'Reapply every 2 hours',
+          'Skin cancer in darker tones is harder to detect — monthly self-checks',
+          'Protect eyes with UV400 sunglasses',
+          'Annual GP skin check recommended',
+        ]
+      },
+      {
+        id: 7,
+        hex: '#825C43',
+        name: 'MST 7 — Dark Medium',
+        fitzpatrick: 'Fitzpatrick Type IV–V · Moderate melanin protection',
+        riskPct: 38,
+        burnTime: '40–55 minutes',
+        spf: 'SPF 30+',
+        body: 'Melanin provides some natural UV protection, but does NOT prevent DNA damage. At UV 9, even dark skin tones sustain cellular damage within 40–55 minutes unprotected. Darker tones often underestimate their risk.',
+        advice: [
+          'Apply SPF 30–50+ daily, even on overcast days',
+          'Reapply every 2 hours — melanin does not remove this need',
+          'Check skin monthly for new or changing spots',
+          'Seek shade between 10am–3pm on high UV days',
+          'Post-inflammatory hyperpigmentation is common — protect to prevent',
+        ]
+      },
+      {
+        id: 8,
+        hex: '#604134',
+        name: 'MST 8 — Dark',
+        fitzpatrick: 'Fitzpatrick Type V · High melanin',
+        riskPct: 30,
+        burnTime: '55–70 minutes',
+        spf: 'SPF 30+',
+        body: 'Dark skin tones have high melanin levels offering significant but not complete UV protection. UV-induced skin cancers in dark skin are rare but often detected at more advanced stages, leading to worse outcomes.',
+        advice: [
+          'SPF 30+ daily — protection is still necessary',
+          'Skin cancer in dark skin is often diagnosed late — be vigilant',
+          'Check palms, soles, under nails where melanoma can appear',
+          'UV damage contributes to hyperpigmentation and uneven skin tone',
+          'Annual skin check with a GP',
+        ]
+      },
+      {
+        id: 9,
+        hex: '#3A312A',
+        name: 'MST 9 — Very Dark',
+        fitzpatrick: 'Fitzpatrick Type V–VI · Very high melanin',
+        riskPct: 22,
+        burnTime: '70–90 minutes',
+        spf: 'SPF 15–30+',
+        body: 'Very dark skin has very high melanin providing substantial natural UV protection. However, UV still causes DNA damage over time, and skin cancer — though less common — can be more difficult to detect.',
+        advice: [
+          'SPF 15–30 daily for ongoing UV protection',
+          'Focus skin checks on palms, soles, under fingernails and toenails',
+          'Acral lentiginous melanoma is more common in darker skin tones',
+          'Eye protection with UV400 glasses still important',
+          'Vitamin D: darker skin may need slightly more sun exposure — discuss with GP',
+        ]
+      },
+      {
+        id: 10,
+        hex: '#292420',
+        name: 'MST 10 — Deepest',
+        fitzpatrick: 'Fitzpatrick Type VI · Maximum melanin',
+        riskPct: 15,
+        burnTime: '90+ minutes',
+        spf: 'SPF 15–30+',
+        body: 'Deepest skin tones have the highest natural melanin protection. UV-induced skin cancer is least common in this group, but remains possible. The greater risk is late detection due to reduced visibility of changes.',
+        advice: [
+          'SPF 15–30 for regular outdoor exposure',
+          'Monthly self-check: focus on palms, soles, under nails, mouth',
+          'Do not dismiss skin changes as "not possible" due to skin tone',
+          'Vitamin D synthesis may be lower — consider dietary sources',
+          'GP skin check every 1–2 years',
+        ]
+      },
+    ];
+
+    // ── 当前选中的色调 index (0-based) ──
+    let selectedIndex = 6; // 默认 MST 7
+
+    // ── 更新右侧结果区域 ──
+    function updateSkinResult(index) {
+      const d = MST_DATA[index];
+
+      // 更新色调预览圆
+      document.getElementById('tone-preview').style.background = d.hex;
+
+      // 更新名称和 Fitzpatrick 类型
+      document.getElementById('tone-name').textContent = d.name;
+      document.getElementById('tone-fitzpatrick').textContent = d.fitzpatrick;
+
+      // 更新风险条宽度
+      document.getElementById('tone-risk-fill').style.width = d.riskPct + '%';
+
+      // 更新标题
+      document.getElementById('tone-advice-title').textContent =
+        'Your UV Risk Profile — ' + d.name.split('—')[1].trim();
+
+      // 更新建议文字
+      document.getElementById('tone-advice-body').innerHTML =
+        d.body + '<br><br><strong>Estimated burn time at UV 9 (unprotected):</strong> ' +
+        '<span style="color:var(--brand-primary)">' + d.burnTime + '</span>' +
+        ' &nbsp;·&nbsp; <strong>Recommended:</strong> ' + d.spf;
+
+      // 更新建议列表
+      const list = document.getElementById('tone-advice-list');
+      list.innerHTML = d.advice.map(a => '<li>' + a + '</li>').join('');
+    }
+
+    // ── 给每个色调按钮绑定点击事件 ──
+    document.querySelectorAll('.tone-btn').forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        // 移除所有 selected 类
+        document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('selected'));
+        // 给当前按钮加 selected
+        btn.classList.add('selected');
+        selectedIndex = i;
+        updateSkinResult(i);
+      });
+    });
+
+    // ── 初始化显示 MST 7 ──
+    updateSkinResult(selectedIndex);
+  </script>
 
 </body>
 </html>
