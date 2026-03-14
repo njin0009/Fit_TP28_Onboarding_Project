@@ -18,7 +18,7 @@ CORS(app)
 
 BASE_DIR  = Path(__file__).resolve().parent
 DB_PATH   = BASE_DIR / "sunsafety.db"
-CLEAN_DIR = BASE_DIR / "data" / "clean"
+CLEAN_DIR = BASE_DIR
 UV_CSV    = CLEAN_DIR / "uv_monthly.csv"
 CANCER_CSV= CLEAN_DIR / "cancer_data.csv"
 CITIES_CSV= CLEAN_DIR / "cities.csv"
